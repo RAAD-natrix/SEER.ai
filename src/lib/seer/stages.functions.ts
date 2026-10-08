@@ -33,15 +33,18 @@ export const runSeerStage = createServerFn({ method: "POST" })
     // Rate limit: 20 AI runs per user per minute
     const since = new Date(Date.now() - 60_000).toISOString();
     const { count } = await sb.from("ai_runs").select("id", { count: "exact", head: true }).gte("started_at", since);
-    if ((count ?? 0) >= 20) return { ok: false as const, error: "Rate limit: too many AI runs in the last minute. Please wait.", status: 429 };
+    if ((count ?? 0) >= 20) return { ok: false as const, error: "Rate limit: too many AI runs in the last minute. Please wait.", status: 429, runId: "", model: "", outputJson: "null", retrieved: [] as { id: string; name: string; status: string }[] };
 
     const { data: profile } = await sb.from("profiles").select("settings").eq("id", uid).maybeSingle();
-    const settings = (profile?.settings ?? {}) as Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const settings: any = profile?.settings ?? {};
     const depth = String(settings.work_depth ?? "STANDARD");
 
     // ---- Gather case-bounded context (never other cases) ----
-    const ctx: Record<string, unknown> = {};
-    const inputIds: Record<string, unknown> = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ctx: any = {};
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const inputIds: any = {};
     if (data.caseId) {
       const [c, brief, state, paths, ev, claims, opts, risks, stk] = await Promise.all([
         sb.from("cases").select("*").eq("id", data.caseId).single(),
@@ -100,9 +103,9 @@ export const runSeerStage = createServerFn({ method: "POST" })
       inputIds.output_id = o.id;
     }
     if (stage === "OUTPUT_DRAFT" || stage === "OUTPUT_SELECT") {
-      const key = data.extra?.template_key as string | undefined;
+      const key = data.extra?.["template_key"] as string | undefined;
       ctx.template = key ? templateByKey(key) : TEMPLATES.map((t) => ({ key: t.key, name: t.name, use_when: t.use_when, do_not_use_when: t.do_not_use_when, kind: t.kind }));
-      ctx.readiness = data.extra?.readiness ?? null;
+      ctx.readiness = data.extra?.["readiness"] ?? null;
     }
 
     // ---- Memory retrieval: generic method cards only ----
@@ -116,7 +119,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
         .select("id,name,status,memory_class,problem_type,mechanism,use_when,do_not_use_when,counterexamples,required_evidence,falsifier,tags")
         .in("status", statuses)
         .limit(300);
-      const q = tokens(JSON.stringify([ctx.case, ctx.active_path, data.text, (ctx.strategic_state as Record<string, unknown> | null)?.current_reframe]));
+      const q = tokens(JSON.stringify([ctx.case, ctx.active_path, data.text, ctx.strategic_state?.current_reframe]));
       const scored = (rules ?? []).map((r) => {
         const t = tokens([r.name, r.problem_type, r.mechanism, r.use_when, (r.tags ?? []).join(" ")].join(" "));
         let s = 0;
@@ -156,11 +159,11 @@ export const runSeerStage = createServerFn({ method: "POST" })
     try {
       const res = await runStructured({ system: SYSTEM_CHARTER, prompt, schema: def.schema, effort: depth === "DEEP" ? "high" : depth === "QUICK" ? "low" : "medium" });
       await sb.from("ai_runs").update({ status: "COMPLETED", model: res.model, output: res.output as never, usage: res.usage as never, completed_at: new Date().toISOString() }).eq("id", run.id);
-      return { ok: true as const, runId: run.id, model: res.model, output: res.output as Record<string, unknown>, retrieved };
+      return { ok: true as const, runId: run.id, model: res.model, outputJson: JSON.stringify(res.output), retrieved, error: "", status: 200 };
     } catch (e) {
       const status = e instanceof GatewayError ? e.status : 500;
       const msg = e instanceof Error ? e.message : "AI run failed";
       await sb.from("ai_runs").update({ status: "FAILED", error: msg, completed_at: new Date().toISOString() }).eq("id", run.id);
-      return { ok: false as const, error: msg, status, runId: run.id };
+      return { ok: false as const, error: msg, status, runId: run.id, model: "", outputJson: "null", retrieved: [] as { id: string; name: string; status: string }[] };
     }
   });

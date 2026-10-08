@@ -5,7 +5,7 @@ import { extractFile, sanitiseFilename, sha256, validateFile } from "./extract";
 export async function uploadSource(f: File, opts: { area: "think" | "research" | "openmind"; caseId?: string | null; classification?: string; sourceType?: string; title?: string; sourceDate?: string; routing?: string; pathIds?: string[] }) {
   const owner = await uid();
   const { data: prof } = await supabase.from("profiles").select("settings").eq("id", owner).single();
-  const maxMb = Number((prof?.settings as Record<string, unknown> | null)?.max_upload_mb ?? 20);
+  const maxMb = Number((prof?.settings as Record<string, unknown> | null)?.["max_upload_mb"] ?? 20);
   const err = validateFile(f, Math.min(maxMb, 25));
   if (err) throw new Error(err);
   const buf = await f.arrayBuffer();
@@ -25,7 +25,7 @@ export async function uploadSource(f: File, opts: { area: "think" | "research" |
       mime: f.type || null,
       file_hash: hash,
       size_bytes: f.size,
-      source_type: opts.sourceType ?? f.name.split(".").pop()?.toUpperCase(),
+      source_type: opts.sourceType ?? f.name.split(".").pop()?.toUpperCase() ?? null,
       classification: opts.classification ?? null,
       status: ex.status,
       coverage: ex.coverage as never,

@@ -66,7 +66,7 @@ export async function runStructured<T extends z.ZodTypeAny>(opts: {
     const output = await result.output;
     const usage = await result.usage;
     const response = await result.response;
-    return { output, model: response?.modelId ?? model, usage, runId };
+    return { output: output as z.infer<T>, model: response?.modelId ?? model, usage, runId };
   } catch (e) {
     if (lastStatus >= 400) {
       let msg = lastBody;

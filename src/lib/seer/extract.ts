@@ -115,6 +115,7 @@ export async function extractFile(f: File): Promise<Extraction> {
       let ok = 0;
       for (const name of wb.SheetNames) {
         const sh = wb.Sheets[name];
+        if (!sh) continue;
         const csv = XLSX.utils.sheet_to_csv(sh);
         const formulas = Object.entries(sh).filter(([k, v]) => !k.startsWith("!") && (v as { f?: string }).f).map(([k, v]) => `${k}: =${(v as { f: string }).f}`);
         if (csv.trim()) ok++;
