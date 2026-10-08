@@ -58,7 +58,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
         sb.from("stakeholders").select("name,influence,alignment,resistance").eq("case_id", data.caseId),
       ]);
       if (c.error || !c.data) throw new Error("Case not found");
-      ctx.case = { title: c.data.title, client: c.data.client, engagement_mode: c.data.engagement_mode, fields: c.data.fields, stage: c.data.stage };
+      ctx.case = { title: c.data.title, client: c.data.client, case_owner: c.data.assignee, stage_owners: c.data.stage_owners, engagement_mode: c.data.engagement_mode, fields: c.data.fields, stage: c.data.stage };
       ctx.brief = brief.data;
       ctx.strategic_state = state.data?.state ?? null;
       ctx.paths = paths.data;
