@@ -17,3 +17,5 @@
 - [x] Backlog screen + case/stage ownership
 - [ ] Email when record is Ready for approval (needs owner email domain)
 - [x] Analyst accounts: open sign-up switch, shared case access, team names in ownership
+- [x] Case analysis panel (Diagnosis, Options, Risks) + final deliverable screen (edit → Red Team → QA → approve → Word)
+- [ ] Approve Enrich SCR as FINAL (owner must name next-step owner + condense to 2 pages, then rerun QA)
