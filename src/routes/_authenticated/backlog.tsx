@@ -38,7 +38,7 @@ function BacklogPage() {
       <input aria-label="Filter by owner" placeholder="Filter by owner name" value={who} onChange={(e) => setWho(e.target.value)} className="mb-4 h-9 w-full max-w-xs rounded-md border bg-background px-2 text-sm" />
       <div className="seer-panel divide-y">
         {rows.map((c) => {
-          const next = c.left[0];
+          const next = c.left[0]!;
           return (
             <Link key={c.id} to="/work/$caseId" params={{ caseId: c.id }} className="block space-y-2 px-4 py-3 hover:bg-secondary">
               <div className="flex flex-wrap items-baseline justify-between gap-2">
