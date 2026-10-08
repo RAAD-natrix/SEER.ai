@@ -8,4 +8,3 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
-- MCP server lives in src/lib/mcp (tools read-only, OAuth via Lovable Cloud auth, RLS as the caller) — keeps assistant access scoped to the signed-in owner.
