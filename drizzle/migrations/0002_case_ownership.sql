@@ -1,0 +1,1 @@
+ALTER TABLE public.cases ADD COLUMN IF NOT EXISTS assignee text, ADD COLUMN IF NOT EXISTS stage_owners jsonb NOT NULL DEFAULT '{}'::jsonb;
