@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as AuthenticatedBacklogRouteImport } from './routes/_authenticated/backlog'
+import { Route as AuthenticatedDeliverablesRouteImport } from './routes/_authenticated/deliverables'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
 import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
 import { Route as AuthenticatedOpenmindRouteImport } from './routes/_authenticated/openmind'
@@ -48,6 +49,12 @@ const AuthenticatedBacklogRoute = AuthenticatedBacklogRouteImport.update({
   path: '/backlog',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDeliverablesRoute =
+  AuthenticatedDeliverablesRouteImport.update({
+    id: '/deliverables',
+    path: '/deliverables',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   id: '/home',
   path: '/home',
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/backlog': typeof AuthenticatedBacklogRoute
+  '/deliverables': typeof AuthenticatedDeliverablesRoute
   '/home': typeof AuthenticatedHomeRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/openmind': typeof AuthenticatedOpenmindRoute
@@ -115,6 +123,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/backlog': typeof AuthenticatedBacklogRoute
+  '/deliverables': typeof AuthenticatedDeliverablesRoute
   '/home': typeof AuthenticatedHomeRoute
   '/memory': typeof AuthenticatedMemoryRoute
   '/openmind': typeof AuthenticatedOpenmindRoute
@@ -132,6 +141,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_authenticated/backlog': typeof AuthenticatedBacklogRoute
+  '/_authenticated/deliverables': typeof AuthenticatedDeliverablesRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
   '/_authenticated/memory': typeof AuthenticatedMemoryRoute
   '/_authenticated/openmind': typeof AuthenticatedOpenmindRoute
@@ -149,6 +159,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/backlog'
+    | '/deliverables'
     | '/home'
     | '/memory'
     | '/openmind'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/backlog'
+    | '/deliverables'
     | '/home'
     | '/memory'
     | '/openmind'
@@ -180,6 +192,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/reset-password'
     | '/_authenticated/backlog'
+    | '/_authenticated/deliverables'
     | '/_authenticated/home'
     | '/_authenticated/memory'
     | '/_authenticated/openmind'
@@ -233,6 +246,13 @@ declare module '@tanstack/react-router' {
       path: '/backlog'
       fullPath: '/backlog'
       preLoaderRoute: typeof AuthenticatedBacklogRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/deliverables': {
+      id: '/_authenticated/deliverables'
+      path: '/deliverables'
+      fullPath: '/deliverables'
+      preLoaderRoute: typeof AuthenticatedDeliverablesRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/home': {
@@ -314,6 +334,7 @@ const AuthenticatedWorkRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBacklogRoute: typeof AuthenticatedBacklogRoute
+  AuthenticatedDeliverablesRoute: typeof AuthenticatedDeliverablesRoute
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
   AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
   AuthenticatedOpenmindRoute: typeof AuthenticatedOpenmindRoute
@@ -326,6 +347,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBacklogRoute: AuthenticatedBacklogRoute,
+  AuthenticatedDeliverablesRoute: AuthenticatedDeliverablesRoute,
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
   AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
   AuthenticatedOpenmindRoute: AuthenticatedOpenmindRoute,
