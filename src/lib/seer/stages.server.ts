@@ -142,7 +142,7 @@ export const STAGES = {
   OUTPUT_REDTEAM: { schema: redteam, task: "RED TEAM this deliverable as a sceptical CEO, board director, CMO, CFO, operating leader and affected stakeholder. Do not hide fatal or material findings." },
   OUTPUT_QA: {
     schema: z.object({ checks: z.array(z.object({ test: str, pass: z.boolean(), note: str })), duplication_found: z.boolean(), summary: str }),
-    task: "Quality-gate this deliverable. Check: question/decision is clear; material claims are supported; uncertainty is not concealed; credible alternatives present where required; material risk not ignored; implementation ownership present where required; next action clear; modules do not substantially duplicate; template acceptance tests.",
+    task: "Quality-gate this deliverable. Check: question/decision is clear; material claims are supported; uncertainty is not concealed; credible alternatives present where required; material risk not ignored; implementation ownership present where required; next action clear; modules do not substantially duplicate; template acceptance tests. OWNERSHIP RECORD: case.case_owner and case.stage_owners in the case record are entered by the workbench owner in the Ownership panel and are the authoritative record of who owns the case and each stage. A deliverable naming an owner who matches case_owner or the relevant stage owner IS supported; do not fail a check for 'absent ownership record' when these fields name that person.",
   },
   LEARNING_EXTRACT: {
     schema: z.object({
