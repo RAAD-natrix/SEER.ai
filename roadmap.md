@@ -13,6 +13,7 @@
 - [x] Email/password: reset link + set password in Settings
 - [ ] GitHub connection (owner action: + → GitHub → Connect project)
 - [x] Outcomes path-to-FINAL + AI stage progress tracker
-- [ ] Walk owner-described real case (waiting for brief)
+- [x] Walk real case (Enrich pitch) through all stages
 - [x] Backlog screen + case/stage ownership
 - [ ] Email when record is Ready for approval (needs owner email domain)
+- [ ] Analyst accounts: shared case access + ownership linked to accounts (waiting on owner decision)
