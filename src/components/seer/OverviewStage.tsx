@@ -44,7 +44,7 @@ export function OverviewStage({ caseId, onGo }: { caseId: string; onGo: (s: "BRI
           </button>
         ))}
       </div>
-      <Block title={`Current strategic state ${d.states[0] ? `· v${d.states[0].version} · ${fmt(d.states[0].created_at)}` : ""}`}>
+      <Block label={`Current strategic state ${d.states[0] ? `· v${d.states[0].version} · ${fmt(d.states[0].created_at)}` : ""}`}>
         {s ? (
           <div className="grid gap-3 text-sm md:grid-cols-2">
             {[["Question to answer", s.question_to_answer], ["Current reframe", s.current_reframe], ["Emerging judgement", s.emerging_judgement], ["Active hypotheses", s.active_hypotheses], ["Contradictions", s.contradictions], ["What would disprove it", s.what_would_disprove_it], ["Next", s.now]].map(([label, v]) =>
@@ -58,7 +58,7 @@ export function OverviewStage({ caseId, onGo }: { caseId: string; onGo: (s: "BRI
         )}
       </Block>
       <div className="grid gap-4 md:grid-cols-2">
-        <Block title="Versions">
+        <Block label="Versions">
           <table className="w-full text-xs">
             <tbody>
               {d.briefs.map((b) => <tr key={b.id} className="border-b"><td className="py-1">Brief v{b.version}</td><td className="text-muted-foreground">{fmt(b.created_at)}</td></tr>)}
@@ -69,7 +69,7 @@ export function OverviewStage({ caseId, onGo }: { caseId: string; onGo: (s: "BRI
           </table>
           {!d.briefs.length && <p className="text-sm text-muted-foreground">Nothing saved yet.</p>}
         </Block>
-        <Block title="Recent AI runs on this case">
+        <Block label="Recent AI runs on this case">
           <table className="w-full text-xs">
             <tbody>
               {d.runs.map((r) => <tr key={r.id} className="border-b"><td className="py-1 font-mono">{r.stage}</td><td><StatusTag s={r.status} /></td><td className="text-muted-foreground">{r.model ?? "—"}</td><td className="text-muted-foreground">{fmt(r.started_at)}</td></tr>)}
