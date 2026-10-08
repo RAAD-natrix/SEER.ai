@@ -39,6 +39,7 @@ export function OverviewStage({ caseId, onGo }: { caseId: string; onGo: (s: "BRI
   ];
   return (
     <div className="space-y-4">
+      <StageTracker caseId={caseId} onGo={onGo} />
       <div className="grid gap-2 md:grid-cols-4">
         {stages.map((st, i) => (
           <button key={st.k} onClick={() => onGo(st.k)} className="seer-panel p-3 text-left hover:border-primary">
