@@ -9,6 +9,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { audit, uid, useStage } from "@/lib/seer/client";
+import { ResearchStage } from "@/components/seer/ResearchStage";
+import { SandboxStage } from "@/components/seer/SandboxStage";
+import { OutcomesStage } from "@/components/seer/OutcomesStage";
 
 export const Route = createFileRoute("/_authenticated/work/$caseId")({
   head: () => ({ meta: [{ title: "Case — SEER.ai" }] }),
@@ -50,15 +53,19 @@ function CasePage() {
       </div>
       <nav aria-label="Workflow" className="mb-6 grid grid-cols-4 gap-1">
         {STEPS.map((s, i) => (
-          <button key={s} onClick={() => setStep(s)} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>
+          <button key={s} onClick={() => { setStep(s); if (c && c.stage !== s) supabase.from("cases").update({ stage: s }).eq("id", caseId).then(() => kase.refetch()); }} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>
             {i + 1} {s}
           </button>
         ))}
       </nav>
       {step === "BRIEF" ? (
         <BriefStage caseId={caseId} onSaved={() => kase.refetch()} />
+      ) : step === "RESEARCH" ? (
+        <ResearchStage caseId={caseId} activePathId={c?.active_path_id ?? null} />
+      ) : step === "SANDBOX" ? (
+        <SandboxStage caseId={caseId} activePathId={c?.active_path_id ?? null} onActive={async (id) => { await supabase.from("cases").update({ active_path_id: id }).eq("id", caseId); kase.refetch(); }} />
       ) : (
-        <p className="text-sm text-muted-foreground">The {step} stage has not been built yet.</p>
+        <OutcomesStage caseId={caseId} />
       )}
     </AppShell>
   );
