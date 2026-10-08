@@ -44,13 +44,14 @@ function Think() {
     queryFn: async () => (await supabase.from("method_rules").select("*").contains("source_ids", [selected!]).order("created_at")).data ?? [],
   });
   const sel = sources.data?.find((s) => s.id === selected);
-  const review = sel?.review as Record<string, unknown> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const review = sel?.review as any;
 
   async function upload() {
     if (!file) return;
     setUploading(true);
     try {
-      const { source, duplicates } = await uploadSource(file, { area: "think", classification: cls, title: title || file.name });
+      const { source, duplicates } = await uploadSource(file, { area: "think", classification: cls ?? "OTHER", title: title || file.name });
       if (duplicates.length) toast.warning(`Identical file already uploaded: ${duplicates.map((d) => d.title).join(", ")}`);
       toast.success(`Uploaded — ${source.status}`);
       setFile(null); setTitle("");
@@ -65,13 +66,15 @@ function Think() {
 
   async function study() {
     if (!sel) return;
-    if (sel.status === "EXTRACTION_FAILED" || sel.status === "NEEDS_VISUAL_REVIEW") return toast.error("No extracted text to study. This source needs visual review.");
+    if (sel.status === "EXTRACTION_FAILED" || sel.status === "NEEDS_VISUAL_REVIEW") { toast.error("No extracted text to study. This source needs visual review."); return; }
     const r = await run({ stage: "THINK_STUDY", sourceId: sel.id, extra: { classification: sel.classification } });
     if (!r) return;
-    const out = r.output as Record<string, unknown>;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const out = r.output as any;
     await supabase.from("sources").update({ review: out as never, status: sel.status === "EXTRACTED" ? "STUDIED" : "STUDIED_PARTIAL" }).eq("id", sel.id);
     const owner = await uid();
-    const cards = (out.candidate_methods as Record<string, string>[]) ?? [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cards: any[] = out.candidate_methods ?? [];
     const mem = sel.classification?.includes("STYLE") ? "STYLE" : sel.classification?.includes("TEMPLATE") ? "TEMPLATE" : sel.classification?.includes("CASE REFERENCE") ? "CASE_REFERENCE" : "METHOD";
     for (const c of cards) {
       const rule = { ...c, source_ids: [sel.id] };
@@ -146,7 +149,7 @@ function Think() {
                     ["argument_evolution", "How the argument evolves"], ["evidence_use", "How evidence is used"], ["contradiction_handling", "How contradictions are handled"],
                     ["alternative_creation", "How alternatives are created"], ["operational_consequences", "Idea into operational consequences"], ["abstract_to_mechanism", "Abstract idea to practical mechanism"],
                     ["commercial_reality_testing", "How commercial reality is tested"], ["implementation_link", "Implementation connected to strategy"], ["simplification_for_audience", "Complexity simplified for audience"],
-                  ].map(([k, l]) => <Block key={k} label={l}><p className="text-sm">{String(review[k] ?? "—")}</p></Block>)}
+                  ].map(([k, l]) => k && l && <Block key={k} label={l}><p className="text-sm">{String(review[k] ?? "—")}</p></Block>)}
                   <Block label="Case-specific content that must not transfer"><Bullets items={review.case_specific_do_not_transfer} /></Block>
                   <Block label="What this source does not prove about the owner's general method"><Bullets items={review.what_this_does_not_prove} /></Block>
                 </div>
@@ -167,7 +170,8 @@ function Think() {
 }
 
 export function CoverageLine({ c }: { c: unknown }) {
-  const v = (c ?? {}) as Record<string, number | string>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const v = (c ?? {}) as any;
   return (
     <div className="mt-3 flex flex-wrap gap-4 font-mono text-xs text-muted-foreground">
       <span>TOTAL_UNITS {v.total_units ?? 0} {v.unit}</span>

@@ -23,7 +23,7 @@ export async function runStructured<T extends z.ZodTypeAny>(opts: {
   prompt: string;
   schema: T;
   effort?: "low" | "medium" | "high";
-}): Promise<{ output: z.infer<T>; model: string; usage: unknown; runId?: string }> {
+}): Promise<{ output: z.infer<T>; model: string; usage: unknown; runId: string | undefined }> {
   const apiKey = process.env["LOVABLE_API_KEY"];
   if (!apiKey) throw new GatewayError(401, "AI service is not configured.");
   let runId: string | undefined;
@@ -66,7 +66,7 @@ export async function runStructured<T extends z.ZodTypeAny>(opts: {
     const output = await result.output;
     const usage = await result.usage;
     const response = await result.response;
-    return { output, model: response?.modelId ?? model, usage, runId };
+    return { output: output as z.infer<T>, model: response?.modelId ?? model, usage, runId };
   } catch (e) {
     if (lastStatus >= 400) {
       let msg = lastBody;

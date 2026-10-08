@@ -28,12 +28,12 @@ export async function fullScan(rule: Partial<Rule>, run: ReturnType<typeof useSt
   if (rule.source_ids?.length) {
     const { data } = await supabase.from("sources").select("extracted_text,review").in("id", rule.source_ids);
     srcText = (data ?? []).map((d) => d.extracted_text ?? "").join("\n");
-    entities = (data ?? []).flatMap((d) => ((d.review as Record<string, unknown> | null)?.source_entities as string[] | undefined) ?? []);
+    entities = (data ?? []).flatMap((d) => ((d.review as Record<string, unknown> | null)?.["source_entities"] as string[] | undefined) ?? []);
   }
   const det = scanContamination(rule as Record<string, unknown>, srcText, entities);
   const ai = await run({ stage: "CONTAMINATION_SCAN", text: JSON.stringify(Object.fromEntries(FIELDS.map(([k]) => [k, rule[k]]).concat([["name", rule.name]]))) });
-  const aiIssues = ai?.ok && (ai.output as { leak_found: boolean }).leak_found ? ((ai.output as { issues: string[] }).issues ?? []) : [];
-  const result: ContaminationResult & { ai_issues: string[]; ai_checked: boolean } = { ...det, blocked: det.blocked || aiIssues.length > 0, ai_issues: aiIssues, ai_checked: !!ai?.ok };
+  const aiIssues = ai && ai.output["leak_found"] ? ((ai.output["issues"] as string[]) ?? []) : [];
+  const result: ContaminationResult & { ai_issues: string[]; ai_checked: boolean } = { ...det, blocked: det.blocked || aiIssues.length > 0, ai_issues: aiIssues, ai_checked: !!ai };
   return result;
 }
 
@@ -52,14 +52,14 @@ export function MethodCard({ rule, onChange }: { rule: Rule; onChange: () => voi
     }
     patch.version = rule.version + 1;
     const { error } = await supabase.from("method_rules").update(patch).eq("id", rule.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     setEdit(false);
     onChange();
   }
   async function setStatus(status: string, event: string) {
-    if ((status === "CANDIDATE" || status === "CANONICAL") && rule.status === "BLOCKED_FOR_GENERAL_REUSE") return toast.error("Blocked cards cannot be promoted. Edit and rescan first.");
+    if ((status === "CANDIDATE" || status === "CANONICAL") && rule.status === "BLOCKED_FOR_GENERAL_REUSE") { toast.error("Blocked cards cannot be promoted. Edit and rescan first."); return; }
     const { error } = await supabase.from("method_rules").update({ status }).eq("id", rule.id);
-    if (error) return toast.error(error.message);
+    if (error) { toast.error(error.message); return; }
     await audit(event, "method_rule", rule.id, { from: rule.status, to: status });
     if (status === "CANONICAL") await supabase.from("learning_events").insert({ owner_id: rule.owner_id, event_type: "CANONICAL_PRINCIPLE", revised_proposition: rule.mechanism, method_rule_id: rule.id, confirmed: true, scope: "GENERAL" });
     onChange();
