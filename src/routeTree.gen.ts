@@ -21,6 +21,7 @@ import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThinkRouteImport } from './routes/_authenticated/think'
 import { Route as AuthenticatedWorkRouteImport } from './routes/_authenticated/work'
+import { Route as AuthenticatedDeliverableOutputIdRouteImport } from './routes/_authenticated/deliverable.$outputId'
 import { Route as AuthenticatedWorkCaseIdRouteImport } from './routes/_authenticated/work.$caseId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -82,6 +83,12 @@ const AuthenticatedWorkRoute = AuthenticatedWorkRouteImport.update({
   path: '/work',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedDeliverableOutputIdRoute =
+  AuthenticatedDeliverableOutputIdRouteImport.update({
+    id: '/deliverable/$outputId',
+    path: '/deliverable/$outputId',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedWorkCaseIdRoute = AuthenticatedWorkCaseIdRouteImport.update({
   id: '/$caseId',
   path: '/$caseId',
@@ -100,6 +107,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/think': typeof AuthenticatedThinkRoute
   '/work': typeof AuthenticatedWorkRouteWithChildren
+  '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
 }
 export interface FileRoutesByTo {
@@ -114,6 +122,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/think': typeof AuthenticatedThinkRoute
   '/work': typeof AuthenticatedWorkRouteWithChildren
+  '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
 }
 export interface FileRoutesById {
@@ -130,6 +139,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/think': typeof AuthenticatedThinkRoute
   '/_authenticated/work': typeof AuthenticatedWorkRouteWithChildren
+  '/_authenticated/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/_authenticated/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
 }
 export interface FileRouteTypes {
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/think'
     | '/work'
+    | '/deliverable/$outputId'
     | '/work/$caseId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/think'
     | '/work'
+    | '/deliverable/$outputId'
     | '/work/$caseId'
   id:
     | '__root__'
@@ -175,6 +187,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/think'
     | '/_authenticated/work'
+    | '/_authenticated/deliverable/$outputId'
     | '/_authenticated/work/$caseId'
   fileRoutesById: FileRoutesById
 }
@@ -271,6 +284,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/deliverable/$outputId': {
+      id: '/_authenticated/deliverable/$outputId'
+      path: '/deliverable/$outputId'
+      fullPath: '/deliverable/$outputId'
+      preLoaderRoute: typeof AuthenticatedDeliverableOutputIdRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/work/$caseId': {
       id: '/_authenticated/work/$caseId'
       path: '/$caseId'
@@ -301,6 +321,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedThinkRoute: typeof AuthenticatedThinkRoute
   AuthenticatedWorkRoute: typeof AuthenticatedWorkRouteWithChildren
+  AuthenticatedDeliverableOutputIdRoute: typeof AuthenticatedDeliverableOutputIdRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
@@ -312,6 +333,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedThinkRoute: AuthenticatedThinkRoute,
   AuthenticatedWorkRoute: AuthenticatedWorkRouteWithChildren,
+  AuthenticatedDeliverableOutputIdRoute: AuthenticatedDeliverableOutputIdRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =

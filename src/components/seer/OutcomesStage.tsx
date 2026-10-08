@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -121,6 +122,7 @@ function Deliverables({ caseId }: { caseId: string }) {
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="mr-auto font-medium">{o.title}</h2>
                 <StatusTag s={o.status} />
+                <Link to="/deliverable/$outputId" params={{ outputId: o.id }} className="rounded border border-primary px-2 py-1 text-xs text-primary">Open final deliverable screen →</Link>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" disabled={!!busy} onClick={async () => { const r = await run({ stage: "OUTPUT_REDTEAM", caseId, outputId: o.id }); if (r) recompute(o, { redteam: r.output as never }); }}>Run Red Team</Button>
