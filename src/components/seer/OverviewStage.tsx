@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Block, Bullets, StatusTag } from "@/components/seer/AppShell";
 import { Button } from "@/components/ui/button";
 import { StateEditor, STATE_LABELS } from "@/components/seer/StateEditor";
+import { StageTracker } from "@/components/seer/StageTracker";
 
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString("en-GB") : "—");
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
