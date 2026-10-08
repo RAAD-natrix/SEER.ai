@@ -131,3 +131,34 @@ function PasswordForm() {
     </form>
   );
 }
+
+function TeamAccess() {
+  const q = useQuery({
+    queryKey: ["team-access"],
+    queryFn: async () => {
+      const me = await uid();
+      const [cfg, role, team] = await Promise.all([
+        supabase.from("app_config").select("allow_signup").eq("id", 1).single(),
+        supabase.from("user_roles").select("role").eq("user_id", me),
+        supabase.from("profiles").select("id,display_name,created_at").order("created_at"),
+      ]);
+      return { open: !!cfg.data?.allow_signup, isOwner: (role.data ?? []).some((r) => r.role === "owner"), team: team.data ?? [] };
+    },
+  });
+  if (!q.data) return null;
+  async function toggle() {
+    const { error } = await supabase.from("app_config").update({ allow_signup: !q.data!.open }).eq("id", 1);
+    if (error) toast.error(error.message); else { toast.success(!q.data!.open ? "Analyst sign-up is OPEN. Turn it off once they have registered." : "Sign-up closed."); q.refetch(); }
+  }
+  return (
+    <div className="seer-panel space-y-3 p-4">
+      <div className="seer-label">Team access</div>
+      <p className="text-xs text-muted-foreground">Analysts see and work on every case. Their method library and memory stay their own.</p>
+      <div className="flex items-center gap-3 text-sm">
+        Analyst sign-up: <StatusTag s={q.data.open ? "OPEN" : "CLOSED"} />
+        {q.data.isOwner && <Button size="sm" variant="outline" onClick={toggle}>{q.data.open ? "Close sign-up" : "Open sign-up"}</Button>}
+      </div>
+      <div className="text-xs"><div className="seer-label mb-1">Members ({q.data.team.length})</div>{q.data.team.map((p) => <div key={p.id}>{p.display_name ?? "—"}</div>)}</div>
+    </div>
+  );
+}
