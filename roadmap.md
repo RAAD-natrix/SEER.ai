@@ -6,7 +6,7 @@
 - [x] OPEN MIND
 - [x] Memory
 - [x] Search + saved views
-- [ ] End-to-end UI run of a real brief (blocked: owner must create account — agent cannot set the owner password)
+- [x] Owner account + end-to-end UI run of sample case (Kopi Rimba)
 - [x] Settings / System Status
 - [x] WORK case overview
 - [ ] GitHub connection (owner action: Plus menu → GitHub → Connect project)
