@@ -81,7 +81,7 @@ export function exportCsv(filename: string, rows: Record<string, unknown>[], met
   const cols = [...new Set(rows.flatMap((r) => Object.keys(r)))];
   const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const lines = [
-    ...(meta ? [`# filters: ${JSON.stringify(meta)}`] : []),
+    ...(meta ? [esc(`# filters: ${JSON.stringify(meta)}`)] : []),
     cols.map(esc).join(","),
     ...rows.map((r) => cols.map((c) => esc(typeof r[c] === "object" ? JSON.stringify(r[c]) : r[c])).join(",")),
   ];
