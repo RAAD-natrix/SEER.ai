@@ -1,0 +1,11 @@
+# SEER.ai roadmap
+- [x] Auth, schema, RLS, private storage, method starters
+- [x] THINK with contamination firewall
+- [x] WORK / Brief + triage
+- [ ] WORK / Research, Sandbox, Outcomes
+- [ ] OPEN MIND
+- [ ] Memory
+- [ ] Search + saved views
+- [ ] End-to-end run of a real brief
+- [ ] Settings / System Status
+- [ ] GitHub connection (owner action: Plus menu → GitHub → Connect project)
