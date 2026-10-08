@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 type Tab = "BRIEF" | "RESEARCH" | "SANDBOX" | "OUTCOMES";
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString("en-GB") : "—");
 
-const PIPELINE: { stage: string; label: string; tab: Tab }[] = [
+export const PIPELINE: { stage: string; label: string; tab: Tab }[] = [
   { stage: "BRIEF_TRIAGE", label: "Brief triage", tab: "BRIEF" },
   { stage: "RESEARCH_DELTA", label: "Research analysis", tab: "RESEARCH" },
   { stage: "PATH_DISCUSS", label: "Path discussion", tab: "SANDBOX" },
