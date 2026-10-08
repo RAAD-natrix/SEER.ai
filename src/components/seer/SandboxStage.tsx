@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import { AnalysisPanel } from "./AnalysisPanel";
 import { useState } from "react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
@@ -172,8 +173,8 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
     <div className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)_380px]">
       {/* LEFT: paths */}
       <div className="space-y-3">
+        <AnalysisPanel caseId={caseId} activePathId={activePathId} />
         <div className="seer-panel space-y-2 p-3">
-          <AnalysisPanel caseId={caseId} activePathId={activePathId} />
           <div className="seer-label">New path</div>
           <Input placeholder="Path title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
           <Button size="sm" className="w-full" disabled={!newTitle.trim()} onClick={() => { newPath(newTitle.trim()); setNewTitle(""); }}>NEW PATH</Button>
