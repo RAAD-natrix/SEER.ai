@@ -106,7 +106,7 @@ export function MethodCard({ rule, onChange }: { rule: Rule; onChange: () => voi
         {rule.status === "PENDING_REVIEW" && <Button size="sm" onClick={() => setStatus("CANDIDATE", "METHOD_APPROVED_CANDIDATE")}>Approve as reusable candidate</Button>}
         {["STARTER", "CANDIDATE"].includes(rule.status) && <Button size="sm" onClick={() => setStatus("CANONICAL", "METHOD_PROMOTED_CANONICAL")}>Confirm canonical</Button>}
         {rule.status !== "RETIRED" && <Button size="sm" variant="ghost" onClick={() => setStatus("RETIRED", "METHOD_RETIRED")}>Retire</Button>}
-        {rule.status === "RETIRED" && <Button size="sm" variant="ghost" onClick={() => setStatus("PENDING_REVIEW", "METHOD_RESTORED")}>Restore for review</Button>}
+        {rule.status === "RETIRED" && <Button size="sm" variant="ghost" onClick={() => setStatus(c?.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW", "METHOD_RESTORED")}>Restore for review</Button>}
       </div>
     </div>
   );
