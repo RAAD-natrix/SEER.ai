@@ -13,7 +13,13 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedHomeRouteImport } from './routes/_authenticated/home'
+import { Route as AuthenticatedMemoryRouteImport } from './routes/_authenticated/memory'
+import { Route as AuthenticatedOpenmindRouteImport } from './routes/_authenticated/openmind'
+import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated/search'
+import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThinkRouteImport } from './routes/_authenticated/think'
+import { Route as AuthenticatedWorkRouteImport } from './routes/_authenticated/work'
+import { Route as AuthenticatedWorkCaseIdRouteImport } from './routes/_authenticated/work.$caseId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,23 +40,65 @@ const AuthenticatedHomeRoute = AuthenticatedHomeRouteImport.update({
   path: '/home',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMemoryRoute = AuthenticatedMemoryRouteImport.update({
+  id: '/memory',
+  path: '/memory',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedOpenmindRoute = AuthenticatedOpenmindRouteImport.update({
+  id: '/openmind',
+  path: '/openmind',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSearchRoute = AuthenticatedSearchRouteImport.update({
+  id: '/search',
+  path: '/search',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedThinkRoute = AuthenticatedThinkRouteImport.update({
   id: '/think',
   path: '/think',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWorkRoute = AuthenticatedWorkRouteImport.update({
+  id: '/work',
+  path: '/work',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedWorkCaseIdRoute = AuthenticatedWorkCaseIdRouteImport.update({
+  id: '/$caseId',
+  path: '/$caseId',
+  getParentRoute: () => AuthenticatedWorkRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/memory': typeof AuthenticatedMemoryRoute
+  '/openmind': typeof AuthenticatedOpenmindRoute
+  '/search': typeof AuthenticatedSearchRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/think': typeof AuthenticatedThinkRoute
+  '/work': typeof AuthenticatedWorkRouteWithChildren
+  '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/home': typeof AuthenticatedHomeRoute
+  '/memory': typeof AuthenticatedMemoryRoute
+  '/openmind': typeof AuthenticatedOpenmindRoute
+  '/search': typeof AuthenticatedSearchRoute
+  '/settings': typeof AuthenticatedSettingsRoute
   '/think': typeof AuthenticatedThinkRoute
+  '/work': typeof AuthenticatedWorkRouteWithChildren
+  '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -58,20 +106,52 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/_authenticated/home': typeof AuthenticatedHomeRoute
+  '/_authenticated/memory': typeof AuthenticatedMemoryRoute
+  '/_authenticated/openmind': typeof AuthenticatedOpenmindRoute
+  '/_authenticated/search': typeof AuthenticatedSearchRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/think': typeof AuthenticatedThinkRoute
+  '/_authenticated/work': typeof AuthenticatedWorkRouteWithChildren
+  '/_authenticated/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/home' | '/think'
+  fullPaths:
+    | '/'
+    | '/auth'
+    | '/home'
+    | '/memory'
+    | '/openmind'
+    | '/search'
+    | '/settings'
+    | '/think'
+    | '/work'
+    | '/work/$caseId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/home' | '/think'
+  to:
+    | '/'
+    | '/auth'
+    | '/home'
+    | '/memory'
+    | '/openmind'
+    | '/search'
+    | '/settings'
+    | '/think'
+    | '/work'
+    | '/work/$caseId'
   id:
     | '__root__'
     | '/'
     | '/_authenticated'
     | '/auth'
     | '/_authenticated/home'
+    | '/_authenticated/memory'
+    | '/_authenticated/openmind'
+    | '/_authenticated/search'
+    | '/_authenticated/settings'
     | '/_authenticated/think'
+    | '/_authenticated/work'
+    | '/_authenticated/work/$caseId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -110,6 +190,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedHomeRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/memory': {
+      id: '/_authenticated/memory'
+      path: '/memory'
+      fullPath: '/memory'
+      preLoaderRoute: typeof AuthenticatedMemoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/openmind': {
+      id: '/_authenticated/openmind'
+      path: '/openmind'
+      fullPath: '/openmind'
+      preLoaderRoute: typeof AuthenticatedOpenmindRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/search': {
+      id: '/_authenticated/search'
+      path: '/search'
+      fullPath: '/search'
+      preLoaderRoute: typeof AuthenticatedSearchRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/settings': {
+      id: '/_authenticated/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/think': {
       id: '/_authenticated/think'
       path: '/think'
@@ -117,17 +225,52 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedThinkRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/work': {
+      id: '/_authenticated/work'
+      path: '/work'
+      fullPath: '/work'
+      preLoaderRoute: typeof AuthenticatedWorkRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/work/$caseId': {
+      id: '/_authenticated/work/$caseId'
+      path: '/$caseId'
+      fullPath: '/work/$caseId'
+      preLoaderRoute: typeof AuthenticatedWorkCaseIdRouteImport
+      parentRoute: typeof AuthenticatedWorkRoute
+    }
   }
 }
 
+interface AuthenticatedWorkRouteChildren {
+  AuthenticatedWorkCaseIdRoute: typeof AuthenticatedWorkCaseIdRoute
+}
+
+const AuthenticatedWorkRouteChildren: AuthenticatedWorkRouteChildren = {
+  AuthenticatedWorkCaseIdRoute: AuthenticatedWorkCaseIdRoute,
+}
+
+const AuthenticatedWorkRouteWithChildren =
+  AuthenticatedWorkRoute._addFileChildren(AuthenticatedWorkRouteChildren)
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedHomeRoute: typeof AuthenticatedHomeRoute
+  AuthenticatedMemoryRoute: typeof AuthenticatedMemoryRoute
+  AuthenticatedOpenmindRoute: typeof AuthenticatedOpenmindRoute
+  AuthenticatedSearchRoute: typeof AuthenticatedSearchRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedThinkRoute: typeof AuthenticatedThinkRoute
+  AuthenticatedWorkRoute: typeof AuthenticatedWorkRouteWithChildren
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedHomeRoute: AuthenticatedHomeRoute,
+  AuthenticatedMemoryRoute: AuthenticatedMemoryRoute,
+  AuthenticatedOpenmindRoute: AuthenticatedOpenmindRoute,
+  AuthenticatedSearchRoute: AuthenticatedSearchRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedThinkRoute: AuthenticatedThinkRoute,
+  AuthenticatedWorkRoute: AuthenticatedWorkRouteWithChildren,
 }
 
 const AuthenticatedRouteRouteWithChildren =
