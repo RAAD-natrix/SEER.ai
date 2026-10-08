@@ -9,4 +9,7 @@
 - [x] Owner account + end-to-end UI run of sample case (Kopi Rimba)
 - [x] Settings / System Status
 - [x] WORK case overview
-- [ ] GitHub connection (owner action: Plus menu → GitHub → Connect project)
+- [x] Strategic state editor (Sandbox + Overview)
+- [x] Email/password: reset link + set password in Settings
+- [ ] GitHub connection (owner action: + → GitHub → Connect project)
+- [ ] Walk owner-described real case (waiting for brief)
