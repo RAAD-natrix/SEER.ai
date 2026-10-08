@@ -151,7 +151,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
     if (!active || !closeDraft) return;
     if (Object.values(closeDraft).some((v) => !v.trim())) { toast.error("All closure fields are required."); return; }
     await setStatus(active, "CLOSED", { conclusion: closeDraft as never, closed_at: new Date().toISOString() });
-    await supabase.from("learning_events").insert({ owner_id: active.owner_id, case_id: caseId, event_type: "FINAL_DECISION", context: `Path closed: ${active.title}`, revised_proposition: closeDraft["conclusion"], confirmed: true, scope: "CASE" });
+    await supabase.from("learning_events").insert({ owner_id: active.owner_id, case_id: caseId, event_type: "FINAL_DECISION", context: `Path closed: ${active.title}`, revised_proposition: closeDraft["conclusion"] ?? null, confirmed: true, scope: "CASE" });
     setCloseDraft(null);
   }
 
