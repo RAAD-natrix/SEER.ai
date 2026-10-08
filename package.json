@@ -11,7 +11,9 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "typecheck": "tsgo --noEmit -p .",
+    "check": "bun run typecheck && bun run lint && bun run build"
   },
   "overrides": {
     "rolldown": "1.2.1"
