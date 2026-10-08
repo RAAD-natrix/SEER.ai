@@ -97,7 +97,7 @@ function Deliverables({ caseId }: { caseId: string }) {
               return (
                 <div key={t.key} className={`flex items-center justify-between gap-2 rounded px-2 py-1.5 ${recommend?.keys.includes(t.key) ? "border border-primary" : ""}`}>
                   <div className="min-w-0"><div className="truncate text-sm">{t.name}</div><div className="seer-label">{t.depth} · readiness {ri}</div></div>
-                  <Button size="sm" variant="ghost" disabled={!!busy} onClick={() => create(t.key)}>Draft</Button>
+                  <Button size="sm" variant="ghost" disabled={!!busy || !b} onClick={() => create(t.key)}>Draft</Button>
                 </div>
               );
             })}
