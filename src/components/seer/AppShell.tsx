@@ -10,6 +10,7 @@ const primary = [
 ] as const;
 const secondary = [
   { to: "/backlog", label: "Backlog" },
+  { to: "/deliverables", label: "Deliverables" },
   { to: "/search", label: "Search" },
   { to: "/memory", label: "Memory" },
   { to: "/settings", label: "Settings" },
