@@ -175,6 +175,7 @@ export type Database = {
       cases: {
         Row: {
           active_path_id: string | null
+          assignee: string | null
           client: string | null
           created_at: string
           deleted_at: string | null
@@ -183,12 +184,14 @@ export type Database = {
           id: string
           owner_id: string
           stage: string
+          stage_owners: Json
           status: string
           title: string
           updated_at: string
         }
         Insert: {
           active_path_id?: string | null
+          assignee?: string | null
           client?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -197,12 +200,14 @@ export type Database = {
           id?: string
           owner_id?: string
           stage?: string
+          stage_owners?: Json
           status?: string
           title: string
           updated_at?: string
         }
         Update: {
           active_path_id?: string | null
+          assignee?: string | null
           client?: string | null
           created_at?: string
           deleted_at?: string | null
@@ -211,6 +216,7 @@ export type Database = {
           id?: string
           owner_id?: string
           stage?: string
+          stage_owners?: Json
           status?: string
           title?: string
           updated_at?: string

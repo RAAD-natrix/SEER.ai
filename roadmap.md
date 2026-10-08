@@ -14,3 +14,5 @@
 - [ ] GitHub connection (owner action: + → GitHub → Connect project)
 - [x] Outcomes path-to-FINAL + AI stage progress tracker
 - [ ] Walk owner-described real case (waiting for brief)
+- [x] Backlog screen + case/stage ownership
+- [ ] Email when record is Ready for approval (needs owner email domain)

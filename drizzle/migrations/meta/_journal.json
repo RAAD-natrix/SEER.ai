@@ -15,6 +15,13 @@
       "when": 1791429272989,
       "tag": "0001_revoke_definer_exec",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791465585062,
+      "tag": "0002_case_ownership",
+      "breakpoints": true
     }
   ]
 }

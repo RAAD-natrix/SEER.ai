@@ -5,6 +5,7 @@ import { Block, Bullets, StatusTag } from "@/components/seer/AppShell";
 import { Button } from "@/components/ui/button";
 import { StateEditor, STATE_LABELS } from "@/components/seer/StateEditor";
 import { StageTracker } from "@/components/seer/StageTracker";
+import { OwnershipPanel } from "@/components/seer/OwnershipPanel";
 
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString("en-GB") : "—");
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -41,6 +42,7 @@ export function OverviewStage({ caseId, onGo }: { caseId: string; onGo: (s: "BRI
   return (
     <div className="space-y-4">
       <StageTracker caseId={caseId} onGo={onGo} />
+      <OwnershipPanel caseId={caseId} />
       <div className="grid gap-2 md:grid-cols-4">
         {stages.map((st, i) => (
           <button key={st.k} onClick={() => onGo(st.k)} className="seer-panel p-3 text-left hover:border-primary">

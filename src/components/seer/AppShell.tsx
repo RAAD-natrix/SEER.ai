@@ -9,6 +9,7 @@ const primary = [
   { to: "/openmind", label: "OPEN MIND" },
 ] as const;
 const secondary = [
+  { to: "/backlog", label: "Backlog" },
   { to: "/search", label: "Search" },
   { to: "/memory", label: "Memory" },
   { to: "/settings", label: "Settings" },
