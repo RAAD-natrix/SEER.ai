@@ -1355,6 +1355,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_team_member: { Args: { _uid: string }; Returns: boolean }
       seed_method_starters: { Args: { _uid: string }; Returns: undefined }
     }
     Enums: {

@@ -13,6 +13,7 @@ export function OwnershipPanel({ caseId }: { caseId: string }) {
     queryKey: ["ownership", caseId],
     queryFn: async () => (await supabase.from("cases").select("assignee,stage_owners").eq("id", caseId).single()).data,
   });
+  const team = useQuery({ queryKey: ["team-names"], queryFn: async () => (await supabase.from("profiles").select("display_name")).data ?? [] });
   const [assignee, setAssignee] = useState("");
   const [owners, setOwners] = useState<Record<string, string>>({});
   useEffect(() => {
@@ -29,11 +30,12 @@ export function OwnershipPanel({ caseId }: { caseId: string }) {
     <div className="seer-panel space-y-3 p-4">
       <div className="seer-label">Ownership</div>
       <div className="grid gap-2 md:grid-cols-5">
-        <label className="space-y-1 text-xs">Case owner<Input value={assignee} onChange={(e) => setAssignee(e.target.value)} placeholder="Analyst name" /></label>
+        <label className="space-y-1 text-xs">Case owner<Input value={assignee} onChange={(e) => setAssignee(e.target.value)} placeholder="Analyst name" list="seer-team" /></label>
         {TABS.map((t) => (
-          <label key={t} className="space-y-1 text-xs">{t} owner<Input value={owners[t] ?? ""} onChange={(e) => setOwners({ ...owners, [t]: e.target.value })} placeholder="—" /></label>
+          <label key={t} className="space-y-1 text-xs">{t} owner<Input value={owners[t] ?? ""} onChange={(e) => setOwners({ ...owners, [t]: e.target.value })} placeholder="—" list="seer-team" /></label>
         ))}
       </div>
+      <datalist id="seer-team">{team.data?.map((t, i) => t.display_name ? <option key={i} value={t.display_name} /> : null)}</datalist>
       <Button size="sm" variant="outline" onClick={save} disabled={!q.data}>Save ownership</Button>
     </div>
   );

@@ -16,4 +16,4 @@
 - [x] Walk real case (Enrich pitch) through all stages
 - [x] Backlog screen + case/stage ownership
 - [ ] Email when record is Ready for approval (needs owner email domain)
-- [ ] Analyst accounts: shared case access + ownership linked to accounts (waiting on owner decision)
+- [x] Analyst accounts: open sign-up switch, shared case access, team names in ownership
