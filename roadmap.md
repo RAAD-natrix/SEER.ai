@@ -2,10 +2,10 @@
 - [x] Auth, schema, RLS, private storage, method starters
 - [x] THINK with contamination firewall
 - [x] WORK / Brief + triage
-- [ ] WORK / Research, Sandbox, Outcomes
-- [ ] OPEN MIND
-- [ ] Memory
-- [ ] Search + saved views
-- [ ] End-to-end run of a real brief
+- [x] WORK / Research, Sandbox, Outcomes
+- [x] OPEN MIND
+- [x] Memory
+- [x] Search + saved views
+- [ ] End-to-end UI run of a real brief (blocked: no owner account yet; all 17 AI stages verified directly)
 - [ ] Settings / System Status
 - [ ] GitHub connection (owner action: Plus menu → GitHub → Connect project)
