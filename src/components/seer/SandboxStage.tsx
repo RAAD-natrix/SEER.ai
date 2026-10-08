@@ -173,6 +173,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
       {/* LEFT: paths */}
       <div className="space-y-3">
         <div className="seer-panel space-y-2 p-3">
+          <AnalysisPanel caseId={caseId} activePathId={activePathId} />
           <div className="seer-label">New path</div>
           <Input placeholder="Path title" value={newTitle} onChange={(e) => setNewTitle(e.target.value)} />
           <Button size="sm" className="w-full" disabled={!newTitle.trim()} onClick={() => { newPath(newTitle.trim()); setNewTitle(""); }}>NEW PATH</Button>
