@@ -62,6 +62,7 @@ function SettingsPage() {
           </Block>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={settings.cross_case_retrieval !== false} onChange={(e) => save({ ...settings, cross_case_retrieval: e.target.checked })} /> Use method cards from Memory in AI runs</label>
           <PasswordForm />
+          <TeamAccess />
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={settings.candidate_memory !== false} onChange={(e) => save({ ...settings, candidate_memory: e.target.checked })} /> Include CANDIDATE method cards (not only canonical)</label>
         </section>
 
