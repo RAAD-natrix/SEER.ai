@@ -6,6 +6,7 @@
 - [x] OPEN MIND
 - [x] Memory
 - [x] Search + saved views
-- [ ] End-to-end UI run of a real brief (blocked: no owner account yet; all 17 AI stages verified directly)
-- [ ] Settings / System Status
+- [ ] End-to-end UI run of a real brief (blocked: owner must create account — agent cannot set the owner password)
+- [x] Settings / System Status
+- [x] WORK case overview
 - [ ] GitHub connection (owner action: Plus menu → GitHub → Connect project)
