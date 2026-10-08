@@ -12,13 +12,14 @@ import { audit, uid, useStage } from "@/lib/seer/client";
 import { ResearchStage } from "@/components/seer/ResearchStage";
 import { SandboxStage } from "@/components/seer/SandboxStage";
 import { OutcomesStage } from "@/components/seer/OutcomesStage";
+import { OverviewStage } from "@/components/seer/OverviewStage";
 
 export const Route = createFileRoute("/_authenticated/work/$caseId")({
   head: () => ({ meta: [{ title: "Case — SEER.ai" }] }),
   component: CasePage,
 });
 
-const STEPS = ["BRIEF", "RESEARCH", "SANDBOX", "OUTCOMES"] as const;
+const STEPS = ["OVERVIEW", "BRIEF", "RESEARCH", "SANDBOX", "OUTCOMES"] as const;
 const FIELDS: [string, string][] = [
   ["primary_audience", "Primary audience"],
   ["decision", "Decision / question"],
@@ -34,7 +35,7 @@ const FIELDS: [string, string][] = [
 
 function CasePage() {
   const { caseId } = Route.useParams();
-  const [step, setStep] = useState<(typeof STEPS)[number]>("BRIEF");
+  const [step, setStep] = useState<(typeof STEPS)[number]>("OVERVIEW");
   const kase = useQuery({
     queryKey: ["case", caseId],
     queryFn: async () => (await supabase.from("cases").select("*").eq("id", caseId).single()).data,
@@ -51,14 +52,16 @@ function CasePage() {
           <StatusTag s={c?.status ?? "ACTIVE"} /> Last saved {c ? new Date(c.updated_at).toLocaleString("en-GB") : "—"}
         </div>
       </div>
-      <nav aria-label="Workflow" className="mb-6 grid grid-cols-4 gap-1">
+      <nav aria-label="Workflow" className="mb-6 grid grid-cols-5 gap-1">
         {STEPS.map((s, i) => (
-          <button key={s} onClick={() => { setStep(s); if (c && c.stage !== s) supabase.from("cases").update({ stage: s }).eq("id", caseId).then(() => kase.refetch()); }} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>
-            {i + 1} {s}
+          <button key={s} onClick={() => { setStep(s); if (c && s !== "OVERVIEW" && c.stage !== s) supabase.from("cases").update({ stage: s }).eq("id", caseId).then(() => kase.refetch()); }} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>
+            {i === 0 ? "◆" : i} {s}
           </button>
         ))}
       </nav>
-      {step === "BRIEF" ? (
+      {step === "OVERVIEW" ? (
+        <OverviewStage caseId={caseId} onGo={setStep} />
+      ) : step === "BRIEF" ? (
         <BriefStage caseId={caseId} onSaved={() => kase.refetch()} />
       ) : step === "RESEARCH" ? (
         <ResearchStage caseId={caseId} activePathId={c?.active_path_id ?? null} />
