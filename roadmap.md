@@ -12,4 +12,5 @@
 - [x] Strategic state editor (Sandbox + Overview)
 - [x] Email/password: reset link + set password in Settings
 - [ ] GitHub connection (owner action: + → GitHub → Connect project)
+- [x] Outcomes path-to-FINAL + AI stage progress tracker
 - [ ] Walk owner-described real case (waiting for brief)

@@ -133,6 +133,23 @@ function Deliverables({ caseId }: { caseId: string }) {
                 <Button size="sm" variant="ghost" onClick={() => { exportDocx(o.title, o.content); audit("EXPORT", "output", o.id, { format: "docx" }); }}>DOCX</Button>
                 <Button size="sm" variant="ghost" onClick={() => { exportPdf(o.title, o.content); audit("EXPORT", "output", o.id, { format: "pdf" }); }}>PDF</Button>
               </div>
+              {(() => {
+                // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                const x = o as any;
+                const steps = [
+                  ["Drafted", true],
+                  ["Red Team run", !!x.redteam],
+                  ["QA run", !!x.qa],
+                  ["Ready for approval", o.status === "READY FOR OWNER APPROVAL" || o.status === "FINAL — OWNER APPROVED"],
+                  ["Approved as FINAL deliverable", o.status === "FINAL — OWNER APPROVED"],
+                ] as const;
+                return (
+                  <ol className="mt-3 flex flex-wrap gap-2 text-xs">
+                    {steps.map(([l, ok], i) => <li key={l} className={`rounded border px-2 py-1 ${ok ? "border-primary text-primary" : "text-muted-foreground"}`}>{ok ? "✓" : i + 1} {l}</li>)}
+                  </ol>
+                );
+              })()}
+              {o.status === "FINAL — OWNER APPROVED" && <p className="mt-2 text-sm text-primary">This is a final, owner-approved deliverable. Download it as DOCX or PDF above.</p>}
               {o.status !== "READY FOR OWNER APPROVAL" && o.status !== "FINAL — OWNER APPROVED" && <p className="mt-2 text-xs text-muted-foreground">FINAL requires Red Team and QA with no fatal issues, no readiness blockers, and your approval.</p>}
             </div>
             {rd && (
