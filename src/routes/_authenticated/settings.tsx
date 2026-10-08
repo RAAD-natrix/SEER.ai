@@ -61,6 +61,7 @@ function SettingsPage() {
             </div>
           </Block>
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={settings.cross_case_retrieval !== false} onChange={(e) => save({ ...settings, cross_case_retrieval: e.target.checked })} /> Use method cards from Memory in AI runs</label>
+          <PasswordForm />
           <label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={settings.candidate_memory !== false} onChange={(e) => save({ ...settings, candidate_memory: e.target.checked })} /> Include CANDIDATE method cards (not only canonical)</label>
         </section>
 
@@ -107,4 +108,25 @@ function SettingsPage() {
 
 function Stat({ k, v }: { k: string; v: string | number }) {
   return <div className="rounded border p-2"><div className="seer-label">{k}</div><div className="text-sm font-medium break-words">{v}</div></div>;
+}
+
+function PasswordForm() {
+  const [pw, setPw] = useState("");
+  const [cur, setCur] = useState("");
+  const [busy, setBusy] = useState(false);
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: pw, ...(cur ? { current_password: cur } : {}) } as never);
+    setBusy(false);
+    if (error) toast.error(error.message); else { toast.success("Password saved."); setPw(""); setCur(""); }
+  }
+  return (
+    <form onSubmit={submit} className="space-y-2 border-t pt-3">
+      <div className="seer-label">Email sign-in password</div>
+      <input type="password" aria-label="Current password" autoComplete="current-password" placeholder="Current password (leave blank if never set)" className="w-full rounded border bg-background px-2 py-1.5 text-sm" value={cur} onChange={(e) => setCur(e.target.value)} />
+      <input type="password" aria-label="New password" autoComplete="new-password" minLength={8} required placeholder="New password (8+ characters)" className="w-full rounded border bg-background px-2 py-1.5 text-sm" value={pw} onChange={(e) => setPw(e.target.value)} />
+      <Button size="sm" type="submit" disabled={busy}>Set password</Button>
+    </form>
+  );
 }

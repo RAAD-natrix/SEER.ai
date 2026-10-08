@@ -83,7 +83,19 @@ function AuthPage() {
         >
           Continue with Google
         </Button>
-        <button className="mt-4 w-full text-center text-xs text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
+        {mode === "in" && (
+          <button
+            className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+            onClick={async () => {
+              if (!email) { toast.error("Enter your email first."); return; }
+              const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
+              if (error) toast.error(error.message); else toast.success("Password link sent. Check your email.");
+            }}
+          >
+            Forgot or never set a password? Email me a link
+          </button>
+        )}
+        <button className="mt-2 w-full text-center text-xs text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
           {mode === "in" ? "First run? Create the owner account" : "Have an account? Sign in"}
         </button>
       </div>
