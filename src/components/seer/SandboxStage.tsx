@@ -9,14 +9,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { audit, uid, useStage } from "@/lib/seer/client";
+import { StateEditor, STATE_LABELS } from "./StateEditor";
 import type { Tables } from "@/integrations/supabase/types";
 
 type Path = Tables<"thought_paths">;
 const KINDS = ["THOUGHT","QUESTION","EVIDENCE","OBSERVATION","CORRECTION","CHALLENGE","HYPOTHESIS","ANALOGY","CONSTRAINT","INSTRUCTION","DECISION"];
 const ACTIONS = ["ACCEPT","CHALLENGE","REVISE","REJECT","PIN","PARK","ADD TO EVIDENCE","ADD TO UNKNOWN","CREATE PATH","MAKE METHOD CANDIDATE","MAKE CANONICAL PRINCIPLE"];
-const STATE_LABELS: [string, string][] = [
-  ["mandate","Mandate"],["question_to_answer","Question to answer"],["stated_problem","Stated problem"],["current_reframe","Current reframe"],["symptoms","Symptoms"],["possible_causes","Possible causes"],["consequences","Consequences"],["constraints","Constraints"],["strong_and_protect","Strong — protect"],["verified_facts","Verified facts"],["reported_information","Reported information"],["direct_observations","Direct observations"],["inferences","Inferences"],["deductions","Deductions"],["contradictions","Contradictions"],["assumptions","Assumptions"],["unknowns","Unknowns"],["active_hypotheses","Active hypotheses"],["strongest_alternative_hypothesis","Strongest alternative"],["stakeholder_tensions","Stakeholder tensions"],["options","Options"],["risks","Risks"],["emerging_judgement","Emerging judgement"],["what_would_disprove_it","What would disprove it"],["now","NOW"],["next","NEXT"],["not_yet","NOT YET"],["decision_required","Decision required"],["confidence_wording","Confidence wording"],
-];
 
 export function SandboxStage({ caseId, activePathId, onActive }: { caseId: string; activePathId: string | null; onActive: (id: string) => void }) {
   const { run, busy } = useStage();
@@ -28,6 +26,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
   const [closeDraft, setCloseDraft] = useState<Record<string, string> | null>(null);
   const [newTitle, setNewTitle] = useState("");
   const [diff, setDiff] = useState<[number, number] | null>(null);
+  const [editing, setEditing] = useState(false);
 
   const paths = useQuery({ queryKey: ["paths-full", caseId], queryFn: async () => (await supabase.from("thought_paths").select("*").eq("case_id", caseId).order("created_at")).data ?? [] });
   const active = paths.data?.find((p) => p.id === activePathId) ?? null;
@@ -269,7 +268,8 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
         </div>
         {tab === "state" && (
           <div className="seer-panel space-y-3 p-3">
-            <div className="flex items-center justify-between"><div className="seer-label">Strategic state {states.data?.[0] ? `v${states.data[0].version}` : ""}</div><Button size="sm" disabled={!!busy} onClick={updateState}>{busy === "STATE_UPDATE" ? "Updating…" : "Update state"}</Button></div>
+            <div className="flex items-center justify-between"><div className="seer-label">Strategic state {states.data?.[0] ? `v${states.data[0].version}` : ""}</div><div className="flex gap-1"><Button size="sm" variant="outline" disabled={!!busy || editing} onClick={() => setEditing(true)}>{latestState ? "Edit" : "Write state"}</Button><Button size="sm" disabled={!!busy || editing} onClick={updateState}>{busy === "STATE_UPDATE" ? "Updating…" : "Update state (AI)"}</Button></div></div>
+            {editing && <StateEditor caseId={caseId} current={latestState} version={states.data?.[0]?.version ?? 0} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); states.refetch(); }} />}
             {(states.data?.length ?? 0) >= 2 && (
               <div className="flex items-center gap-1 text-xs">
                 Diff
@@ -279,7 +279,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
                 {diff && <button className="ml-auto text-muted-foreground" onClick={() => setDiff(null)}>clear</button>}
               </div>
             )}
-            {diff ? <StateDiff a={states.data?.find((s) => s.version === diff[0])?.state} b={states.data?.find((s) => s.version === diff[1])?.state} /> : latestState ? (
+            {editing ? null : diff ? <StateDiff a={states.data?.find((s) => s.version === diff[0])?.state} b={states.data?.find((s) => s.version === diff[1])?.state} /> : latestState ? (
               <div className="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
                 {STATE_LABELS.map(([k, l]) => <Block key={k} label={l}>{Array.isArray(latestState[k]) ? <Bullets items={latestState[k]} /> : <p className="text-sm">{latestState[k] || "—"}</p>}</Block>)}
               </div>

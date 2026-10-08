@@ -1,6 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useState } from "react";
 import { Block, Bullets, StatusTag } from "@/components/seer/AppShell";
+import { Button } from "@/components/ui/button";
+import { StateEditor, STATE_LABELS } from "@/components/seer/StateEditor";
 
 const fmt = (d?: string | null) => (d ? new Date(d).toLocaleString("en-GB") : "—");
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -23,6 +26,7 @@ export function OverviewStage({ caseId, onGo }: { caseId: string; onGo: (s: "BRI
       return { briefs: briefs.data ?? [], states: states.data ?? [], paths: paths.data ?? [], sources: sources.count ?? 0, evidence: ev.count ?? 0, outputs: outputs.data ?? [], forecasts: forecasts.count ?? 0, runs: runs.data ?? [] };
     },
   });
+  const [editing, setEditing] = useState(false);
   const d = q.data;
   if (!d) return <p className="text-sm text-muted-foreground">Loading case overview…</p>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -44,19 +48,21 @@ export function OverviewStage({ caseId, onGo }: { caseId: string; onGo: (s: "BRI
           </button>
         ))}
       </div>
-      <Block label={`Current strategic state ${d.states[0] ? `· v${d.states[0].version} · ${fmt(d.states[0].created_at)}` : ""}`}>
-        {s ? (
+      <div className="seer-panel space-y-3 p-4">
+        <div className="flex items-center justify-between">
+          <div className="seer-label">Current strategic state {d.states[0] ? `· v${d.states[0].version} · ${fmt(d.states[0].created_at)}` : ""}</div>
+          {!editing && <Button size="sm" variant="outline" onClick={() => setEditing(true)}>{s ? "Edit state" : "Write state"}</Button>}
+        </div>
+        {editing ? (
+          <StateEditor caseId={caseId} current={s} version={d.states[0]?.version ?? 0} onCancel={() => setEditing(false)} onSaved={() => { setEditing(false); q.refetch(); }} />
+        ) : s ? (
           <div className="grid gap-3 text-sm md:grid-cols-2">
-            {[["Question to answer", s.question_to_answer], ["Current reframe", s.current_reframe], ["Emerging judgement", s.emerging_judgement], ["Active hypotheses", s.active_hypotheses], ["Contradictions", s.contradictions], ["What would disprove it", s.what_would_disprove_it], ["Next", s.now]].map(([label, v]) =>
-              list(v).length ? (
-                <div key={label as string}><div className="seer-label">{label as string}</div><Bullets items={list(v)} /></div>
-              ) : null,
-            )}
+            {STATE_LABELS.map(([k, label]) => (list(s[k]).length ? <div key={k}><div className="seer-label">{label}</div><Bullets items={list(s[k])} /></div> : null))}
           </div>
         ) : (
-          <p className="text-sm text-muted-foreground">No strategic state saved yet. It is created in SANDBOX.</p>
+          <p className="text-sm text-muted-foreground">No strategic state saved yet. Write one here, or use Update state (AI) in SANDBOX.</p>
         )}
-      </Block>
+      </div>
       <div className="grid gap-4 md:grid-cols-2">
         <Block label="Versions">
           <table className="w-full text-xs">
