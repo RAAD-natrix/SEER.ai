@@ -142,7 +142,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
       `STAGE: ${stage}`,
       `WORK DEPTH: ${depth}`,
       `TASK: ${def.task}`,
-      data.extra && stage !== "OUTPUT_DRAFT" ? `OWNER PARAMETERS: ${JSON.stringify(data.extra).slice(0, 4000)}` : "",
+       data.extra && stage !== "OUTPUT_DRAFT" ? `<untrusted_data name="owner_parameters">${JSON.stringify(data.extra).slice(0, 4000)}</untrusted_data>` : "",
       `<untrusted_data name="case_record">\n${JSON.stringify(ctx).slice(0, 90000)}\n</untrusted_data>`,
       sourceText ? `<untrusted_data name="source_text">\n${clip(sourceText, 60000)}\n</untrusted_data>` : "",
       data.text ? `<untrusted_data name="owner_input">\n${data.text}\n</untrusted_data>` : "",
@@ -161,7 +161,8 @@ export const runSeerStage = createServerFn({ method: "POST" })
 
     try {
       const res = await runStructured({ system: SYSTEM_CHARTER, prompt, schema: def.schema, effort: depth === "DEEP" ? "high" : depth === "QUICK" ? "low" : "medium" });
-      await sb.from("ai_runs").update({ status: "COMPLETED", model: res.model, output: res.output as never, usage: res.usage as never, completed_at: new Date().toISOString() }).eq("id", run.id);
+       const { error: saveError } = await sb.from("ai_runs").update({ status: "COMPLETED", model: res.model, output: res.output as never, usage: res.usage as never, completed_at: new Date().toISOString() }).eq("id", run.id);
+       if (saveError) throw new Error("Analysis completed but its audit record could not be saved. Retry before using the result.");
       return { ok: true as const, runId: run.id, model: res.model, outputJson: JSON.stringify(res.output), retrieved, error: "", status: 200 };
     } catch (e) {
       const status = e instanceof GatewayError ? e.status : 500;
