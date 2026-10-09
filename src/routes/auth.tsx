@@ -6,6 +6,7 @@ import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BrandLogo } from "@/components/seer/BrandIdentity";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -61,11 +62,15 @@ function AuthPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="seer-panel w-full max-w-sm p-6">
-        <div className="seer-label">Strategic Judgement Engine · v7.0</div>
-        <h1 className="mb-1 text-2xl font-semibold tracking-tight">SEER.ai</h1>
-        <p className="mb-6 text-sm text-muted-foreground">Private, invite-only. The first account created becomes the owner.</p>
+    <div className="flex min-h-screen items-center justify-center px-6 py-12">
+      <div className="w-full max-w-sm">
+        <div className="mb-8 border-b pb-7">
+          <BrandLogo className="mb-5 h-24" />
+          <div className="seer-label text-primary">Base Pairing</div>
+          <h1 className="mt-2 text-4xl font-semibold">SEER.ai</h1>
+          <p className="mt-2 text-base">Second mind. Symbiote.</p>
+          <p className="mt-1 text-xs text-muted-foreground">Strategic Judgement Engine</p>
+        </div>
         <form onSubmit={submit} className="space-y-3">
           <div className="space-y-1">
             <Label htmlFor="email">Email</Label>
@@ -90,8 +95,8 @@ function AuthPage() {
           Continue with Google
         </Button>
         {mode === "in" && (
-          <button
-            className="mt-3 w-full text-center text-xs text-muted-foreground hover:text-foreground"
+          <Button variant="link"
+            className="mt-3 h-auto w-full whitespace-normal text-center text-xs text-muted-foreground hover:text-foreground"
             onClick={async () => {
               if (!email) { toast.error("Enter your email first."); return; }
               const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo: `${window.location.origin}/reset-password` });
@@ -99,11 +104,12 @@ function AuthPage() {
             }}
           >
             Forgot or never set a password? Email me a link
-          </button>
+          </Button>
         )}
-        <button className="mt-2 w-full text-center text-xs text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
+        <Button variant="link" className="mt-2 h-auto w-full whitespace-normal text-center text-xs text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
           {mode === "in" ? "First run? Create the owner account" : "Have an account? Sign in"}
-        </button>
+        </Button>
+        <p className="mt-8 border-t pt-4 text-xs text-muted-foreground">Claudian Navin Stanislaus<br /><span className="mt-1 block text-primary">Judgement — not noise.</span></p>
       </div>
     </div>
   );
