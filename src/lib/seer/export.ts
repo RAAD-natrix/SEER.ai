@@ -20,7 +20,8 @@ export function deliverableMarkdown(o: { content: string; status: string; versio
   return /^\*\*Status:\*\*.*$/im.test(o.content)
     ? o.content.replace(/^\*\*Status:\*\*.*$/im, (line) => {
       const parts = line.split(" — ").slice(1);
-      if (/^(NOT OWNER APPROVED|OWNER APPROVED)([. ]|$)/i.test(parts[0] ?? "")) parts[0] = parts[0].replace(/^(NOT OWNER APPROVED|OWNER APPROVED)\.?\s*/i, "");
+      const first = parts[0] ?? "";
+      if (/^(NOT OWNER APPROVED|OWNER APPROVED)([. ]|$)/i.test(first)) parts[0] = first.replace(/^(NOT OWNER APPROVED|OWNER APPROVED)\.?\s*/i, "");
       const caveat = parts.join(" — ").trim();
       return status + (caveat ? " — " + caveat : "");
     })
