@@ -1,4 +1,5 @@
 import { OutcomeMethodFeedback } from "./OutcomeMethodFeedback";
+import { ReadinessWords, readinessVerdict } from "./ReadinessWords";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -97,10 +98,10 @@ function Deliverables({ caseId }: { caseId: string }) {
           {recommend && <p className="mb-2 text-xs text-muted-foreground">{recommend.rationale}</p>}
           <div className="max-h-[50vh] space-y-1 overflow-y-auto">
             {TEMPLATES.map((t) => {
-              const ri = b ? readinessFor(b, t.key).index : 0;
+              const ri = b ? readinessVerdict(readinessFor(b, t.key)) : "Not assessed";
               return (
                 <div key={t.key} className={`flex items-center justify-between gap-2 rounded px-2 py-1.5 ${recommend?.keys.includes(t.key) ? "border border-primary" : ""}`}>
-                  <div className="min-w-0"><div className="truncate text-sm">{t.name}</div><div className="seer-label">{t.depth} · readiness {ri}</div></div>
+                  <div className="min-w-0"><div className="truncate text-sm">{t.name}</div><div className="seer-label">{t.depth} · {ri.toLowerCase()}</div></div>
                   <Button size="sm" variant="ghost" disabled={!!busy || !b} onClick={() => create(t.key)}>Draft</Button>
                 </div>
               );
@@ -159,11 +160,7 @@ function Deliverables({ caseId }: { caseId: string }) {
             </div>
             {rd && (
               <div className="seer-panel p-4">
-                <div className="flex items-baseline gap-3"><div className="seer-label">READINESS INDEX</div><div className="text-2xl font-semibold text-primary">{rd.index}</div><div className="text-xs text-muted-foreground">raw {rd.raw} · not a probability the strategy is correct</div></div>
-                <div className="mt-2 grid gap-1 sm:grid-cols-2">
-                  {rd.components?.map((c: { key: string; label: string; score: number; weight: number }) => <div key={c.key} className="flex justify-between text-xs"><span>{c.label}</span><span className="font-mono">{c.score}/{c.weight}</span></div>)}
-                </div>
-                {rd.blockers?.length > 0 && <div className="mt-2"><div className="seer-label text-destructive">Blockers</div><ul className="list-disc pl-5 text-xs">{rd.blockers.map((x: { label: string; cap: number }) => <li key={x.label}>{x.label} — max {x.cap}</li>)}</ul></div>}
+                <ReadinessWords rd={rd} />
               </div>
             )}
             {edit !== null ? (

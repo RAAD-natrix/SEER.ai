@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ReadinessWords, readinessVerdict } from "@/components/seer/ReadinessWords";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -71,7 +72,7 @@ function DeliverablePage() {
       <Link to="/work/$caseId" params={{ caseId: o.case_id }} className="seer-label hover:text-primary">← Back to case</Link>
       <WorkbenchIdentity area="FINAL DELIVERABLE" title={o.title} />
       <div className="seer-panel mb-4 flex flex-wrap items-center gap-2 p-3">
-        <StatusTag s={materialOpen ? "READY SUBJECT TO CORRECTIONS" : o.status} /><span className="seer-label">v{o.version}{rd?.index !== undefined ? ` · readiness ${rd.index}` : ""}</span>
+        <StatusTag s={materialOpen ? "READY SUBJECT TO CORRECTIONS" : o.status} /><span className="seer-label">v{o.version}{rd ? ` · ${readinessVerdict(rd).toLowerCase()}` : ""}</span>
         <span className="mr-auto" />
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_REDTEAM", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { redteam: r.output as never }); }}>{busy === "OUTPUT_REDTEAM" ? "Running…" : "Run Red Team"}</Button>
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_QA", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { qa: r.output as never }); }}>{busy === "OUTPUT_QA" ? "Running…" : "Run QA"}</Button>
@@ -80,7 +81,7 @@ function DeliverablePage() {
         <Button size="sm" variant="ghost" disabled={dirty} onClick={async () => { try { await exportPdf(o.title, deliverableMarkdown(o)); await audit("EXPORT", "output", o.id, { format: "pdf" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Download failed"); } }}>PDF</Button>
       </div>
       {materialOpen && <p role="alert" className="mb-3 text-sm text-warning">Unresolved material Red Team findings. Revise the record and run Red Team and QA again before approval.</p>}
-      {rd?.blockers?.length > 0 && <div className="seer-panel mb-4 p-3 text-xs"><div className="seer-label text-destructive">Blockers</div><ul className="list-disc pl-5">{rd.blockers.map((b: { label: string }) => <li key={b.label}>{b.label}</li>)}</ul></div>}
+      {rd && <div className="seer-panel mb-4 p-3"><ReadinessWords rd={rd} compact /></div>}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-2">
           <div className="seer-label">Edit</div>

@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { readinessVerdict } from "@/components/seer/ReadinessWords";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -46,7 +47,7 @@ function DeliverablesPage() {
                 <td className="p-3 text-xs text-muted-foreground">{x.kase.title}</td>
                 <td className="p-3"><StatusTag s={x.status !== "FINAL — OWNER APPROVED" && ((x.redteam as { material?: string[] } | null)?.material?.length ?? 0) > 0 ? "READY SUBJECT TO CORRECTIONS" : x.status} /></td>
                 <td className="p-3 font-mono text-xs">v{x.version} · {x.versions} saved</td>
-                <td className="p-3 font-mono text-xs">{(x.readiness as { index?: number } | null)?.index ?? "—"}</td>
+                <td className="p-3 text-xs">{readinessVerdict(x.readiness as never)}</td>
                 <td className="p-3 text-xs">{d(x.created_at)}</td>
                 <td className="p-3 text-xs">{d(x.updated_at)}</td>
                 <td className="p-3 text-xs">{d(x.approved_at)}</td>

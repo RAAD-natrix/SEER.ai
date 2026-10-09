@@ -22,19 +22,20 @@ export function AppShell({ children }: { children: ReactNode }) {
   const navigate = useNavigate();
   return (
     <div className="flex min-h-screen flex-col">
-      <header className="sticky top-0 z-30 border-b bg-background">
+      <a href="#main" className="skip-link">Skip to main content</a>
+      <header className="no-print sticky top-0 z-30 border-b bg-background">
         <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-4 lg:gap-4">
-          <Link to="/home" className="flex shrink-0 items-center gap-2.5" aria-label="SEER.ai home">
+          <Link to="/home" className="flex min-h-11 shrink-0 items-center gap-2.5" title="Home">
             <BrandLogo className="h-10" decorative />
-            <span><span className="block font-semibold">SEER.ai</span><span className="block font-mono text-[9px] text-primary">BASE PAIRING</span></span>
+            <span><span className="block font-semibold">SEER.ai</span><span className="block font-mono text-xs text-primary">BASE PAIRING</span></span>
           </Link>
           <nav className="ml-1 flex items-center gap-0 lg:gap-1" aria-label="Primary">
             {primary.map((n) => (
               <Link
                 key={n.to}
                 to={n.to}
-                className="rounded px-2.5 py-1.5 font-mono text-xs tracking-wider text-muted-foreground hover:text-foreground"
-                activeProps={{ className: "rounded px-2.5 py-1.5 font-mono text-xs tracking-wider bg-secondary text-primary" }}
+                className="inline-flex min-h-11 items-center rounded px-2.5 font-mono text-sm tracking-wider text-muted-foreground hover:text-foreground"
+                activeProps={{ className: "inline-flex min-h-11 items-center rounded px-2.5 font-mono text-sm tracking-wider bg-secondary text-primary" }}
               >
                 {n.label}
               </Link>
@@ -42,7 +43,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           </nav>
           <nav className="ml-auto hidden items-center gap-1 xl:flex" aria-label="Secondary">
             {secondary.map((n) => (
-              <Link key={n.to} to={n.to} className="rounded px-2 py-1.5 text-sm text-muted-foreground hover:text-foreground" activeProps={{ className: "rounded px-2 py-1.5 text-sm text-foreground" }}>
+              <Link key={n.to} to={n.to} className="inline-flex min-h-11 items-center rounded px-2 text-sm text-muted-foreground hover:text-foreground" activeProps={{ className: "inline-flex min-h-11 items-center rounded px-2 text-sm text-foreground" }}>
                 {n.label}
               </Link>
             ))}
@@ -59,7 +60,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <nav className="flex flex-wrap items-center gap-1 border-t px-3 py-1 xl:hidden" aria-label="Secondary mobile">
           {secondary.map((n) => (
-            <Link key={n.to} to={n.to} className="px-2 py-1 text-sm text-muted-foreground" activeProps={{ className: "px-2 py-1 text-sm text-foreground" }}>
+            <Link key={n.to} to={n.to} className="inline-flex min-h-11 items-center px-2 text-sm text-muted-foreground" activeProps={{ className: "inline-flex min-h-11 items-center px-2 text-sm text-foreground" }}>
               {n.label}
             </Link>
           ))}
@@ -68,8 +69,8 @@ export function AppShell({ children }: { children: ReactNode }) {
           </Button>
         </nav>
       </header>
-      <main className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6">{children}</main>
-      <footer className="border-t px-4 py-3 text-center text-xs text-muted-foreground">
+      <main id="main" tabIndex={-1} className="mx-auto w-full max-w-[1600px] flex-1 px-4 py-6 focus:outline-none">{children}</main>
+      <footer className="no-print border-t px-4 py-3 text-center text-xs text-muted-foreground">
         <span className="text-primary">SEER.ai · Base Pairing</span><span className="mx-2">·</span>All Rights Reserved to Claudian Navin Stanislaus · v{APP_VERSION}
       </footer>
     </div>
@@ -110,7 +111,7 @@ export function StatusTag({ s }: { s: string }) {
   const good = ["CANONICAL", "CLOSED", "FINAL — OWNER APPROVED", "EXTRACTED", "COMPLETED", "READY FOR OWNER APPROVAL"].includes(s);
   const bad = ["WITHDRAWN", "BLOCKED_FOR_GENERAL_REUSE", "REJECTED", "FAILED", "EXTRACTION_FAILED", "NOT READY"].includes(s);
   return (
-    <span className={`inline-block rounded border px-1.5 py-0.5 font-mono text-[10px] tracking-wider ${good ? "border-primary text-primary" : bad ? "border-destructive text-destructive" : "text-muted-foreground"}`}>
+    <span className={`inline-block rounded border px-1.5 py-0.5 font-mono text-xs tracking-wider ${good ? "border-primary text-primary" : bad ? "border-destructive text-destructive" : "text-muted-foreground"}`}>
       {s}
     </span>
   );

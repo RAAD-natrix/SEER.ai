@@ -50,11 +50,11 @@ function SettingsPage() {
   return (
     <AppShell>
       <PageTitle title="Settings & System Status" />
-      <div className="grid gap-6 md:grid-cols-2">
-        <section className="seer-panel space-y-4 p-4">
+      <div className="grid min-w-0 grid-cols-1 gap-6 md:grid-cols-2">
+        <section className="seer-panel min-w-0 space-y-4 p-4">
           <h2 className="font-semibold">Working settings</h2>
           <Block label="Work depth">
-            <div className="flex gap-1">
+            <div className="flex flex-wrap gap-1">
               {["QUICK", "STANDARD", "DEEP"].map((d) => (
                 <Button key={d} size="sm" variant={(settings.work_depth ?? "STANDARD") === d ? "default" : "outline"} onClick={() => save({ ...settings, work_depth: d })}>{d}</Button>
               ))}
@@ -97,10 +97,10 @@ function SettingsPage() {
           <Block label="Last AI run">
             {last ? <p className="text-sm"><span className="font-mono">{last.stage}</span> · <StatusTag s={last.status} /> · {last.model ?? "no model recorded"} · {fmt(last.started_at)}{last.error ? ` · ${last.error}` : ""}</p> : <p className="text-sm text-muted-foreground">No AI runs yet.</p>}
           </Block>
-          <table className="w-full text-xs">
+          <div className="overflow-x-auto"><table className="w-full text-xs">
             <thead><tr className="text-left text-muted-foreground"><th>Stage</th><th>Status</th><th>Model</th><th>Tokens</th><th>Started</th></tr></thead>
             <tbody>{r.slice(0, 20).map((x) => <tr key={x.id} className="border-b"><td className="py-1 font-mono">{x.stage}</td><td><StatusTag s={x.status} /></td><td>{x.model ?? "—"}</td><td>{tok(x.usage) || "—"}</td><td>{fmt(x.started_at)}</td></tr>)}</tbody>
-          </table>
+          </table></div>
         </section>
       </div>
     </AppShell>
@@ -108,7 +108,7 @@ function SettingsPage() {
 }
 
 function Stat({ k, v }: { k: string; v: string | number }) {
-  return <div className="rounded border p-2"><div className="seer-label">{k}</div><div className="text-sm font-medium break-words">{v}</div></div>;
+  return <div className="min-w-0 rounded border p-2"><div className="seer-label">{k}</div><div className="text-sm font-medium [overflow-wrap:anywhere]">{v}</div></div>;
 }
 
 function PasswordForm() {
@@ -162,8 +162,8 @@ function TeamAccess() {
       <div className="seer-label">Team access</div>
       <p className="text-xs text-muted-foreground">Analysts see and work on every case. Their method library and memory stay their own.</p>
       <p className="text-xs text-muted-foreground">New accounts require an exact email invitation, valid for 7 days, and open sign-up. Only the owner can approve FINAL deliverables. This is a trusted-team workspace, not isolated client portals.</p>
-      {q.data.isOwner && <div className="flex gap-2"><input type="email" aria-label="Analyst invitation email" placeholder="Analyst email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-full rounded border bg-background px-2 text-sm" /><Button size="sm" variant="outline" onClick={invite}>Authorise email</Button></div>}
-      <div className="flex items-center gap-3 text-sm">
+      {q.data.isOwner && <div className="flex flex-wrap gap-2"><input type="email" aria-label="Analyst invitation email" placeholder="Analyst email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="min-w-0 flex-1 basis-48 rounded border bg-background px-2 text-sm" /><Button size="sm" variant="outline" onClick={invite}>Authorise email</Button></div>}
+      <div className="flex flex-wrap items-center gap-3 text-sm">
         Analyst sign-up: <StatusTag s={q.data.open ? "OPEN" : "CLOSED"} />
         {q.data.isOwner && <Button size="sm" variant="outline" onClick={toggle}>{q.data.open ? "Close sign-up" : "Open sign-up"}</Button>}
       </div>

@@ -100,6 +100,8 @@ export const runSeerStage = createServerFn({ method: "POST" })
       if (!s) throw new Error("Source not found");
       // Firewall: research sources only inside their own case
       if (s.case_id && data.caseId && s.case_id !== data.caseId) throw new Error("Source belongs to a different case");
+      // Privacy firewall: local-only sources are never sent to an AI model.
+      if (s.processing_consent !== "ALLOWED_AI") throw new Error("This source is marked Local only. Allow AI processing for it in Research before analysing it.");
       sourceText = s.extracted_text ?? "";
       ctx.source = { title: s.title, type: s.source_type, classification: s.classification, coverage: s.coverage, warnings: s.warnings };
       inputIds.source_id = s.id;

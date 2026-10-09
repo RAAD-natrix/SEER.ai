@@ -8,7 +8,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ACCEPT } from "@/lib/seer/extract";
-import { createTextSource, deleteSource, uploadSource } from "@/lib/seer/sources";
+import { createTextSource, deleteSource, setSourceConsent, uploadSource } from "@/lib/seer/sources";
+import { ConsentChoice, consentLabel, type Consent } from "./ConsentChoice";
 import { exportCsv } from "@/lib/seer/export";
 import { uid, useStage } from "@/lib/seer/client";
 
@@ -26,6 +27,7 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
   const [title, setTitle] = useState("");
   const [date, setDate] = useState("");
   const [route, setRoute] = useState<string>("");
+  const [consent, setConsent] = useState<Consent>("LOCAL_ONLY");
   const [pathSel, setPathSel] = useState<string[]>([]);
   const [sel, setSel] = useState<string | null>(null);
   const [filter, setFilter] = useState({ classification: "", direction: "" });
@@ -44,12 +46,13 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
     const pathIds = route === "A" ? [activePathId!] : route === "D" ? pathSel : [];
     try {
       const src = file
-        ? (await uploadSource(file, { area: "research", caseId, title: title || file.name, routing: route, pathIds, ...(date ? { sourceDate: date } : {}) })).source
-        : await createTextSource(text, { area: "research", caseId, title: title || "Research note", routing: route, pathIds });
+        ? (await uploadSource(file, { area: "research", caseId, title: title || file.name, routing: route, pathIds, consent, ...(date ? { sourceDate: date } : {}) })).source
+        : await createTextSource(text, { area: "research", caseId, title: title || "Research note", routing: route, pathIds, consent });
       setFile(null); setText(""); setTitle("");
       await sources.refetch();
       setSel(src.id);
       if (!src.extracted_text) { toast.warning("Stored, but no text could be extracted for analysis."); return; }
+      if (src.processing_consent !== "ALLOWED_AI") { toast.success("Saved as Local only. It was not sent to the AI; allow AI processing on the source to analyse it."); return; }
       const r = await run({ stage: "RESEARCH_DELTA", caseId, sourceId: src.id, ...(activePathId ? { pathId: activePathId } : {}) });
       if (!r) return;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -91,7 +94,8 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
         <div className="seer-panel space-y-3 p-4">
           <div className="seer-label">Add research</div>
           <Input type="file" accept={ACCEPT} aria-label="Research file" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-          {!file && <Textarea rows={4} placeholder="…or paste research text" value={text} onChange={(e) => setText(e.target.value)} />}
+          {!file && <Textarea rows={4} aria-label="Research text" placeholder="…or paste research text" value={text} onChange={(e) => setText(e.target.value)} />}
+          <ConsentChoice name="research-consent" value={consent} onChange={setConsent} />
           <div className="grid grid-cols-2 gap-2">
             <div className="space-y-1"><Label htmlFor="rt">Title</Label><Input id="rt" value={title} onChange={(e) => setTitle(e.target.value)} /></div>
             <div className="space-y-1"><Label htmlFor="rd">Source date</Label><Input id="rd" value={date} onChange={(e) => setDate(e.target.value)} placeholder="if known" /></div>
@@ -125,7 +129,8 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
         {s && (
           <div className="seer-panel space-y-3 p-4">
             <div className="flex items-start justify-between gap-2">
-              <div><h2 className="font-medium">{s.title}</h2><div className="seer-label">{s.source_date || "date unknown"} · uploaded {new Date(s.created_at).toLocaleDateString("en-GB")}</div></div>
+              <div><h2 className="font-medium">{s.title}</h2><div className="seer-label">{s.source_date || "date unknown"} · uploaded {new Date(s.created_at).toLocaleDateString("en-GB")} · {consentLabel(s.processing_consent)}</div>
+                <Button size="sm" variant="outline" className="mt-1" onClick={async () => { const next = s.processing_consent === "ALLOWED_AI" ? "LOCAL_ONLY" : "ALLOWED_AI"; if (next === "ALLOWED_AI" && !confirm("Allow SEER to send this source's text to the AI model?")) return; try { await setSourceConsent(s.id, next); toast.success(next === "ALLOWED_AI" ? "AI processing allowed for this source." : "Source set to Local only."); sources.refetch(); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not change privacy"); } }}>{s.processing_consent === "ALLOWED_AI" ? "Make local only" : "Allow AI processing"}</Button></div>
               <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Delete this source?")) { await deleteSource(s.id); setSel(null); sources.refetch(); } }}>Delete</Button>
             </div>
             {!d ? <p className="text-sm text-muted-foreground">No delta yet.</p> : (
@@ -161,10 +166,10 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
         <div className="seer-panel p-4">
           <div className="mb-2 flex flex-wrap items-center gap-2">
             <div className="seer-label mr-auto">Evidence register · {evView.length} of {evidence.data?.length ?? 0}</div>
-            <select aria-label="Classification filter" className="h-8 rounded border bg-background px-2 text-xs" value={filter.classification} onChange={(e) => setFilter({ ...filter, classification: e.target.value })}>
+            <select aria-label="Classification filter" className="min-h-11 rounded border bg-background px-2 text-sm" value={filter.classification} onChange={(e) => setFilter({ ...filter, classification: e.target.value })}>
               <option value="">All classes</option>{["BRIEF FACT","VERIFIED","REPORTED","OBSERVED","INFERRED","DEDUCED","CONTRADICTED","UNKNOWN"].map((c) => <option key={c}>{c}</option>)}
             </select>
-            <select aria-label="Direction filter" className="h-8 rounded border bg-background px-2 text-xs" value={filter.direction} onChange={(e) => setFilter({ ...filter, direction: e.target.value })}>
+            <select aria-label="Direction filter" className="min-h-11 rounded border bg-background px-2 text-sm" value={filter.direction} onChange={(e) => setFilter({ ...filter, direction: e.target.value })}>
               <option value="">All directions</option><option>SUPPORTS</option><option>CONTRADICTS</option><option>NEUTRAL</option>
             </select>
             <Button size="sm" variant="outline" onClick={() => exportCsv("evidence", evView, filter)}>Export view</Button>
