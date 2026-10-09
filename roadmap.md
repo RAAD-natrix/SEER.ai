@@ -12,7 +12,7 @@
 - [ ] Publish gate: full positive/negative approval matrix, stale-context invalidation and version-specific finding dispositions
 - [ ] Publish gate: real external MCP OAuth sign-in, tool calls, refresh/revoke and wrong-user checks on intended origin
 - [ ] Publish gate: live acceptance of eight stages without completed ledger history, all output templates and failure recovery
-- [ ] 7.1 candidate: server-governed learning transfer, revision invalidation and contradiction-linked withdrawal (not implemented)
+- [x] 7.1: server-governed learning — challenge, bounded validation, owner activation, six-field transfer, edit invalidation, outcome contradiction withdrawal (live-tested)
 - [ ] Publish gate: production signup/password settings verification, restoration rehearsal and GitHub first green Actions run
 - [x] Incorporate Navin's gold DNA brand, Base Pairing identity and verify the workbench appearance
 - [x] Auth, schema, RLS, private storage, method starters
