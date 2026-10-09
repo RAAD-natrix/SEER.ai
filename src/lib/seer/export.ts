@@ -42,8 +42,15 @@ function parse(md: string): Block[] {
     if (l.startsWith("## ")) return { kind: "h2", text: l.slice(3) };
     if (l.startsWith("# ")) return { kind: "h1", text: l.slice(2) };
     if (/^\s*([-*]|\d+\.)\s+/.test(l)) return { kind: "li", text: l.replace(/^\s*([-*]|\d+\.)\s+/, "") };
+    // Render Markdown table rows as readable labelled lines in both formats,
+    // rather than leaking pipe delimiters and separator syntax into the file.
+    if (/^\s*\|.*\|\s*$/.test(l)) {
+      const cells = l.trim().slice(1, -1).split("|").map((cell) => cell.trim());
+      if (cells.every((cell) => /^:?-+:?$/.test(cell))) return { kind: "p", text: "" };
+      return { kind: "p", text: cells.join(" — ") };
+    }
     return { kind: "p", text: l };
-  });
+  }).filter((block) => block.text) as Block[];
 }
 const strip = (t: string) => t.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").replace(/`(.*?)`/g, "$1");
 
