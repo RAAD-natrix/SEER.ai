@@ -182,7 +182,7 @@
   @page { size: A4; margin: 12mm; }
   html, body { background: #fff !important; color: #000 !important; font-size: 10.5pt; }
   * { color: #000 !important; background: transparent !important; box-shadow: none !important; }
-  .no-print, nav, aside, header button, [role="toolbar"], .skip-link { display: none !important; }
+  .no-print, nav, aside, button, input, textarea, [role="toolbar"], .skip-link { display: none !important; }
   .seer-panel { border: 0.5pt solid #777 !important; break-inside: avoid; }
   .seer-label, small, .text-xs { font-size: 9pt !important; }
   table { width: 100% !important; table-layout: fixed; border-collapse: collapse; }
@@ -191,4 +191,5 @@
   a { text-decoration: underline; }
   .overflow-x-auto, .overflow-y-auto, [class*="max-h-"] { overflow: visible !important; max-height: none !important; }
   h1, h2, h3 { break-after: avoid; }
+  .grid { display: block !important; }
 }
