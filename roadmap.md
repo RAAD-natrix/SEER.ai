@@ -1,4 +1,5 @@
 # SEER.ai roadmap
+- [x] v7.1: gold DNA identity on every internal page, version 7.1.0, full check passed, fresh pharmacy case (73d70f48) Brief analysis run, branded exports re-verified
 - [x] Apply shared DNA identity to Think, Work and Deliverables and verify live pages
 - [x] Audit approval integrity, MCP boundaries and release checklist; document attachment comparison and 7.1/8 verdict (remaining gates below)
 - [x] Brand Word/PDF exports with Base Pairing logo, document identity and recurring footer; verify real files
