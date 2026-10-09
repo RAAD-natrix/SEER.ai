@@ -168,8 +168,10 @@ export const runSeerStage = createServerFn({ method: "POST" })
       return { ok: true as const, runId: run.id, model: res.model, outputJson: JSON.stringify(res.output), retrieved, error: "", status: 200 };
     } catch (e) {
       const status = e instanceof GatewayError ? e.status : 500;
-      const msg = e instanceof Error ? e.message : "AI run failed";
-      await sb.from("ai_runs").update({ status: "FAILED", error: msg, completed_at: new Date().toISOString() }).eq("id", run.id);
+       const name = e instanceof Error ? e.name : "";
+       const failureClass = status === 429 ? "RATE_LIMIT" : e instanceof GatewayError ? "GATEWAY" : /schema|output|validation/i.test(name) ? "SCHEMA" : /fetch|network|timeout/i.test(e instanceof Error ? e.message : "") ? "NETWORK" : /audit record/.test(e instanceof Error ? e.message : "") ? "PERSISTENCE" : "UNKNOWN";
+       const msg = e instanceof GatewayError ? (status === 402 ? "AI credits are exhausted." : status === 429 ? "AI rate limit reached. Please wait and retry." : "AI gateway request failed. Please retry or check System Status.") : `AI run failed (${failureClass}). No usable result was saved; please retry.`;
+       await sb.from("ai_runs").update({ status: "FAILED", error: msg, failure_class: failureClass, completed_at: new Date().toISOString() }).eq("id", run.id);
       return { ok: false as const, error: msg, status, runId: run.id, model: "", outputJson: "null", retrieved: [] as { id: string; name: string; status: string }[] };
     }
   });
