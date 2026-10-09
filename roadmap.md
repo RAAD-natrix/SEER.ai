@@ -1,13 +1,17 @@
 # SEER.ai roadmap
-- [ ] Apply shared DNA identity to Think, Work and Deliverables and verify live pages
-- [ ] Re-test approval integrity, MCP sign-in and release checklist; deliver attachment comparison and 7.1/8 verdict
+- [x] Apply shared DNA identity to Think, Work and Deliverables and verify live pages
+- [x] Audit approval integrity, MCP boundaries and release checklist; document attachment comparison and 7.1/8 verdict (remaining gates below)
 - [x] Brand Word/PDF exports with Base Pairing logo, document identity and recurring footer; verify real files
 - [x] Audit private-workbench publish readiness and apply first priority integrity, security and operational fixes
 - [x] Embed bounded interdisciplinary strategy, PDCA/DMAIC and owned experiments in reasoning and outcomes
 - [x] Run separate full-stage synthetic audit case (932d6472-4db3-4de5-bd16-9f7e731be842); 11/11 stages completed; audit QA passed; both formats 2 pages
 - [x] Server-owned review provenance and atomic version edits; forged ledger/review writes rejected in live testing
 - [ ] Publish gate: independent collaborator-negative tests (requires a separately authorised analyst account)
-- [ ] Publish gate: compute authoritative readiness server-side; require disposition of material Red Team findings (synthetic v3 has five despite passing QA)
+- [x] Enforce saved-record hard blockers server-side; reject forged readiness and unresolved material Red Team findings (synthetic v3 remains unapproved)
+- [ ] Publish gate: full positive/negative approval matrix, stale-context invalidation and version-specific finding dispositions
+- [ ] Publish gate: real external MCP OAuth sign-in, tool calls, refresh/revoke and wrong-user checks on intended origin
+- [ ] Publish gate: live acceptance of eight stages without completed ledger history, all output templates and failure recovery
+- [ ] 7.1 candidate: server-governed learning transfer, revision invalidation and contradiction-linked withdrawal (not implemented)
 - [ ] Publish gate: production signup/password settings verification, restoration rehearsal and GitHub first green Actions run
 - [x] Incorporate Navin's gold DNA brand, Base Pairing identity and verify the workbench appearance
 - [x] Auth, schema, RLS, private storage, method starters
