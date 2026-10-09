@@ -85,7 +85,7 @@ function DeliverablePage() {
           <Textarea aria-label="Deliverable text" rows={30} value={text} onChange={(e) => setText(e.target.value)} className="font-mono text-xs" />
           <div className="flex gap-2"><Input placeholder="Reason for edit" value={reason} onChange={(e) => setReason(e.target.value)} /><Button disabled={!dirty} onClick={save}>Save version</Button>{dirty && <Button variant="ghost" onClick={() => setText(o.content)}>Discard</Button>}</div>
         </div>
-        <div className="space-y-2"><div className="seer-label">Preview</div><div className="seer-panel seer-prose max-h-[75vh] overflow-y-auto p-5 text-sm"><ReactMarkdown>{text}</ReactMarkdown></div></div>
+        <div className="space-y-2"><div className="seer-label">Preview</div><div className="seer-panel seer-prose max-h-[75vh] overflow-y-auto p-5 text-sm"><ReactMarkdown>{dirty ? text : deliverableMarkdown(o)}</ReactMarkdown></div></div>
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         {o.redteam && <div className="seer-panel space-y-2 p-4"><div className="seer-label">Red Team</div><RedTeamView r={o.redteam} /></div>}

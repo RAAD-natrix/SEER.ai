@@ -168,7 +168,7 @@ function Deliverables({ caseId }: { caseId: string }) {
             {edit !== null ? (
               <div className="seer-panel space-y-2 p-4"><Textarea rows={24} value={edit} onChange={(e) => setEdit(e.target.value)} /><div className="flex gap-2"><Button size="sm" onClick={saveEdit}>Save new version</Button><Button size="sm" variant="ghost" onClick={() => setEdit(null)}>Cancel</Button></div></div>
             ) : (
-              <div className="seer-panel seer-prose p-5 text-sm"><ReactMarkdown>{o.content}</ReactMarkdown></div>
+              <div className="seer-panel seer-prose p-5 text-sm"><ReactMarkdown>{deliverableMarkdown(o)}</ReactMarkdown></div>
             )}
             {o.redteam && <div className="seer-panel space-y-2 p-4"><div className="seer-label">Red Team</div><RedTeamView r={o.redteam} /></div>}
             {o.qa && (

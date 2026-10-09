@@ -3,7 +3,8 @@
 - [x] Audit private-workbench publish readiness and apply first priority integrity, security and operational fixes
 - [x] Embed bounded interdisciplinary strategy, PDCA/DMAIC and owned experiments in reasoning and outcomes
 - [x] Run separate full-stage synthetic audit case (932d6472-4db3-4de5-bd16-9f7e731be842); 11/11 stages completed; audit QA passed; both formats 2 pages
-- [ ] Publish gate: server-owned review provenance and atomic version/review/approval transactions; independent collaborator-negative tests
+- [x] Server-owned review provenance and atomic version edits; forged ledger/review writes rejected in live testing
+- [ ] Publish gate: independent collaborator-negative tests (requires a separately authorised analyst account)
 - [ ] Publish gate: production signup/password settings verification, restoration rehearsal and GitHub first green Actions run
 - [x] Incorporate Navin's gold DNA brand, Base Pairing identity and verify the workbench appearance
 - [x] Auth, schema, RLS, private storage, method starters
@@ -25,4 +26,4 @@
 - [ ] Email when record is Ready for approval (needs owner email domain)
 - [x] Analyst accounts: open sign-up switch, shared case access, team names in ownership
 - [x] Case analysis panel (Diagnosis, Options, Risks) + final deliverable screen (edit → Red Team → QA → approve → Word)
-- [ ] Approve Enrich SCR as FINAL (owner must name next-step owner + condense to 2 pages, then rerun QA)
+- [x] Enrich SCR remains FINAL v4; branded Word/PDF verified at two A4 pages without changing approved content
