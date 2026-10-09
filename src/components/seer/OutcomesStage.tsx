@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { TEMPLATES, templateByKey } from "@/lib/seer/templates";
 import { loadCaseBundle, readinessFor } from "@/lib/seer/caseData";
-import { exportDocx, exportJSON, exportMarkdown, exportPdf } from "@/lib/seer/export";
+import { deliverableMarkdown, exportDocx, exportJSON, exportMarkdown, exportPdf } from "@/lib/seer/export";
 import { audit, uid, useStage } from "@/lib/seer/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -67,8 +67,10 @@ function Deliverables({ caseId }: { caseId: string }) {
     let status = "NOT READY";
     if (merged.redteam && merged.qa) status = rd.blockers.length || qaFails || rt?.fatal?.length ? "READY SUBJECT TO CORRECTIONS" : "READY FOR OWNER APPROVAL";
     if (merged.approved_at && rd.canBeFinal && !qaFails && !rt?.fatal?.length) status = "FINAL — OWNER APPROVED";
-    await supabase.from("outputs").update({ ...patch, readiness: rd as never, status }).eq("id", out.id);
+    const { error } = await supabase.from("outputs").update({ ...patch, readiness: rd as never, status }).eq("id", out.id);
+    if (error) { toast.error(error.message); return null; }
     outputs.refetch(); bundle.refetch();
+    return status;
   }
 
   async function saveEdit() {
@@ -128,12 +130,12 @@ function Deliverables({ caseId }: { caseId: string }) {
                 <Button size="sm" variant="outline" disabled={!!busy} onClick={async () => { const r = await run({ stage: "OUTPUT_REDTEAM", caseId, outputId: o.id }); if (r) recompute(o, { redteam: r.output as never }); }}>Run Red Team</Button>
                 <Button size="sm" variant="outline" disabled={!!busy} onClick={async () => { const r = await run({ stage: "OUTPUT_QA", caseId, outputId: o.id }); if (r) recompute(o, { qa: r.output as never }); }}>Run QA</Button>
                 <Button size="sm" variant="outline" onClick={() => setEdit(o.content)}>Edit</Button>
-                <Button size="sm" disabled={o.status !== "READY FOR OWNER APPROVAL"} onClick={async () => { await recompute(o, { approved_at: new Date().toISOString() }); await audit("OUTPUT_FINAL_APPROVAL", "output", o.id); }}>Approve as FINAL</Button>
+                <Button size="sm" disabled={o.status !== "READY FOR OWNER APPROVAL"} onClick={async () => { const status = await recompute(o, { approved_at: new Date().toISOString() }); if (status === "FINAL — OWNER APPROVED") await audit("OUTPUT_FINAL_APPROVAL", "output", o.id); }}>Approve as FINAL</Button>
                 <span className="mx-1 border-l" />
-                <Button size="sm" variant="ghost" onClick={() => { exportMarkdown(o.title, o.content); audit("EXPORT", "output", o.id, { format: "md" }); }}>MD</Button>
+                <Button size="sm" variant="ghost" onClick={() => { exportMarkdown(o.title, deliverableMarkdown(o)); audit("EXPORT", "output", o.id, { format: "md" }); }}>MD</Button>
                 <Button size="sm" variant="ghost" onClick={() => { exportJSON(o.title, { ...o, footer: "Generated using SEER.ai" }); audit("EXPORT", "output", o.id, { format: "json" }); }}>JSON</Button>
-                <Button size="sm" variant="ghost" onClick={() => { exportDocx(o.title, o.content); audit("EXPORT", "output", o.id, { format: "docx" }); }}>DOCX</Button>
-                <Button size="sm" variant="ghost" onClick={() => { exportPdf(o.title, o.content); audit("EXPORT", "output", o.id, { format: "pdf" }); }}>PDF</Button>
+                <Button size="sm" variant="ghost" onClick={async () => { try { await exportDocx(o.title, deliverableMarkdown(o)); await audit("EXPORT", "output", o.id, { format: "docx" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Download failed"); } }}>DOCX</Button>
+                <Button size="sm" variant="ghost" onClick={async () => { try { await exportPdf(o.title, deliverableMarkdown(o)); await audit("EXPORT", "output", o.id, { format: "pdf" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Download failed"); } }}>PDF</Button>
               </div>
               {(() => {
                 // eslint-disable-next-line @typescript-eslint/no-explicit-any

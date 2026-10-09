@@ -14,6 +14,14 @@ function download(blob: Blob, filename: string) {
 const safe = (s: string) => s.replace(/[^\w\- ]+/g, "").trim().replace(/\s+/g, "_").slice(0, 60) || "seer_output";
 const FOOTER = `${brand.footer} · All rights reserved`;
 
+// Export metadata is authoritative; never mutate the approved source record.
+export function deliverableMarkdown(o: { content: string; status: string; version: number; approved_at: string | null }) {
+  const status = `**Status:** ${o.status}${o.approved_at ? ` · Approved ${new Date(o.approved_at).toISOString().slice(0, 10)}` : ""} · Version ${o.version}`;
+  return /^\*\*Status:\*\*.*$/im.test(o.content)
+    ? o.content.replace(/^\*\*Status:\*\*.*$/im, (line) => status + (line.includes(" — ") ? " — " + line.split(" — ").slice(1).join(" — ") : ""))
+    : `${status}\n\n${o.content}`;
+}
+
 export function exportMarkdown(title: string, md: string) {
   download(new Blob([`${md}\n\n---\n${FOOTER}\n`], { type: "text/markdown" }), `${safe(title)}.md`);
 }
@@ -47,7 +55,7 @@ export async function exportDocx(title: string, md: string) {
   const header = new d.Header({ children: [new d.Paragraph({ children: [
     new d.ImageRun({ type: "png", data: logo, transformation: { width: 25, height: 44 }, altText: { title: "Base Pairing", description: "Gold DNA helix", name: "Base Pairing logo" } }),
     new d.TextRun({ text: `  ${brand.name}  /  SEER.ai`, bold: true, color: brand.gold, size: 20 }),
-  ], border: { bottom: { color: brand.gold, style: d.BorderStyle.SINGLE, size: 6, space: 6 } } })] });
+   ], shading: { fill: brand.ink }, border: { bottom: { color: brand.gold, style: d.BorderStyle.SINGLE, size: 6, space: 6 } } })] });
   const footer = new d.Footer({ children: [new d.Paragraph({ border: { top: { color: brand.gold, style: d.BorderStyle.SINGLE, size: 4, space: 6 } }, children: [
     new d.TextRun({ text: `${brand.footer}  ·  `, color: brand.muted, size: 15 }), new d.TextRun({ children: [d.PageNumber.CURRENT], size: 15 }), new d.TextRun({ text: " / ", size: 15 }), new d.TextRun({ children: [d.PageNumber.TOTAL_PAGES], size: 15 }),
   ] })] });
