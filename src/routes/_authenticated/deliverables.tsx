@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell, PageTitle, StatusTag } from "@/components/seer/AppShell";
 
 export const Route = createFileRoute("/_authenticated/deliverables")({
-  head: () => ({ meta: [{ title: "Deliverables — SEER.ai" }, { name: "description", content: "Every deliverable by date, version and approval status." }] }),
+  head: () => ({ meta: [{ title: "Deliverables — SEER.ai" }, { name: "description", content: "Every deliverable by date, version and approval status." }, { property: "og:title", content: "Deliverables — SEER.ai" }, { property: "og:description", content: "Every deliverable by date, version and approval status." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DeliverablesPage,
 });
 

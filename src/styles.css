@@ -5,7 +5,7 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * SEER.ai design system — charcoal/black, white/soft grey, one restrained lime accent.
+ * SEER.ai design system — ink/charcoal, white/soft grey and the owner's DNA gold.
  * No gradients, no decorative animation.
  */
 
@@ -54,15 +54,15 @@
 
 :root {
   --radius: 0.25rem;
-  --background: oklch(0.17 0.003 260);
+  --background: oklch(0.16 0.002 260);
   --foreground: oklch(0.96 0.002 260);
   --card: oklch(0.21 0.003 260);
   --card-foreground: oklch(0.96 0.002 260);
   --popover: oklch(0.21 0.003 260);
   --popover-foreground: oklch(0.96 0.002 260);
-  /* restrained lime accent */
-  --primary: oklch(0.88 0.2 125);
-  --primary-foreground: oklch(0.17 0.01 125);
+  /* DNA gold: the connective judgement between business and consumer. */
+  --primary: oklch(0.79 0.13 85);
+  --primary-foreground: oklch(0.17 0.002 260);
   --secondary: oklch(0.26 0.003 260);
   --secondary-foreground: oklch(0.94 0.002 260);
   --muted: oklch(0.24 0.003 260);
@@ -74,25 +74,26 @@
   --warning: oklch(0.8 0.15 75);
   --border: oklch(0.32 0.004 260);
   --input: oklch(0.34 0.004 260);
-  --ring: oklch(0.88 0.2 125);
-  --chart-1: oklch(0.88 0.2 125);
+  --ring: oklch(0.79 0.13 85);
+  --chart-1: oklch(0.79 0.13 85);
   --chart-2: oklch(0.75 0.01 260);
   --chart-3: oklch(0.6 0.01 260);
   --chart-4: oklch(0.8 0.15 75);
   --chart-5: oklch(0.66 0.2 25);
   --sidebar: oklch(0.15 0.003 260);
   --sidebar-foreground: oklch(0.96 0.002 260);
-  --sidebar-primary: oklch(0.88 0.2 125);
-  --sidebar-primary-foreground: oklch(0.17 0.01 125);
+  --sidebar-primary: oklch(0.79 0.13 85);
+  --sidebar-primary-foreground: oklch(0.17 0.002 260);
   --sidebar-accent: oklch(0.26 0.003 260);
   --sidebar-accent-foreground: oklch(0.96 0.002 260);
   --sidebar-border: oklch(0.32 0.004 260);
-  --sidebar-ring: oklch(0.88 0.2 125);
+  --sidebar-ring: oklch(0.79 0.13 85);
 }
 
 @layer base {
   * {
     border-color: var(--color-border);
+    letter-spacing: 0 !important;
   }
   html {
     font-size: 16px;
@@ -119,7 +120,7 @@
   .seer-label {
     font-family: var(--font-mono);
     font-size: 0.6875rem;
-    letter-spacing: 0.08em;
+    letter-spacing: 0;
     text-transform: uppercase;
     color: var(--color-muted-foreground);
   }
@@ -127,6 +128,29 @@
     background: var(--color-card);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-md);
+  }
+  .base-pairing-identity {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 2rem;
+    padding: 1.25rem 0 2rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-pairing-line {
+    display: grid;
+    grid-template-columns: auto minmax(1rem, 1fr) auto minmax(1rem, 1fr) auto;
+    align-items: center;
+    gap: 1rem;
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .brand-bond { height: 1px; background: var(--primary); opacity: 0.55; }
+  @media (max-width: 480px) {
+    .base-pairing-identity { gap: 1rem; }
+    .brand-pairing-line { gap: 0.5rem; font-size: 0.625rem; }
   }
   .seer-prose h1 { font-size: 1.4rem; font-weight: 600; margin: 1rem 0 0.5rem; }
   .seer-prose h2 { font-size: 1.15rem; font-weight: 600; margin: 1rem 0 0.4rem; }

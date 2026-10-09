@@ -13,7 +13,7 @@ import { deleteSource, uploadSource } from "@/lib/seer/sources";
 import { audit, uid, useStage } from "@/lib/seer/client";
 
 export const Route = createFileRoute("/_authenticated/think")({
-  head: () => ({ meta: [{ title: "Think — SEER.ai" }, { name: "description", content: "Teach SEER how you think from past work." }] }),
+  head: () => ({ meta: [{ title: "Think — SEER.ai" }, { name: "description", content: "Teach SEER how you think from past work." }, { property: "og:title", content: "Think — SEER.ai" }, { property: "og:description", content: "Teach SEER how you think from past work." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Think,
 });
 

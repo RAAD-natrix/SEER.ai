@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { exportCsv } from "@/lib/seer/export";
 
 export const Route = createFileRoute("/_authenticated/memory")({
-  head: () => ({ meta: [{ title: "Memory — SEER.ai" }, { name: "description", content: "Method memory and learning history." }] }),
+  head: () => ({ meta: [{ title: "Memory — SEER.ai" }, { name: "description", content: "Method memory and learning history." }, { property: "og:title", content: "Memory — SEER.ai" }, { property: "og:description", content: "Method memory and learning history." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Memory,
 });
 

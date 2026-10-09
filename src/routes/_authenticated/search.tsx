@@ -11,7 +11,7 @@ import { exportCsv } from "@/lib/seer/export";
 import { uid } from "@/lib/seer/client";
 
 export const Route = createFileRoute("/_authenticated/search")({
-  head: () => ({ meta: [{ title: "Search — SEER.ai" }, { name: "description", content: "Find briefs, analyses and methods." }] }),
+  head: () => ({ meta: [{ title: "Search — SEER.ai" }, { name: "description", content: "Find briefs, analyses and methods." }, { property: "og:title", content: "Search — SEER.ai" }, { property: "og:description", content: "Find briefs, analyses and methods." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Search,
 });
 

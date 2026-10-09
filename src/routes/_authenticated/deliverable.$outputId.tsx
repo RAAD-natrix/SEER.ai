@@ -15,7 +15,7 @@ import { audit, useStage } from "@/lib/seer/client";
 import type { Tables } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_authenticated/deliverable/$outputId")({
-  head: () => ({ meta: [{ title: "Final deliverable — SEER.ai" }, { name: "description", content: "Edit, review and approve a deliverable as FINAL." }] }),
+  head: () => ({ meta: [{ title: "Final deliverable — SEER.ai" }, { name: "description", content: "Edit, review and approve a deliverable as FINAL." }, { property: "og:title", content: "Final deliverable — SEER.ai" }, { property: "og:description", content: "Edit, review and approve a deliverable as FINAL." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: DeliverablePage,
 });
 

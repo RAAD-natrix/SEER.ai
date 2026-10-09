@@ -8,9 +8,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { audit } from "@/lib/seer/client";
+import { BasePairingIdentity } from "@/components/seer/BrandIdentity";
 
 export const Route = createFileRoute("/_authenticated/home")({
-  head: () => ({ meta: [{ title: "Home — SEER.ai" }, { name: "description", content: "Choose Think, Work or Open Mind." }] }),
+  head: () => ({ meta: [{ title: "Base Pairing — SEER.ai" }, { name: "description", content: "Claudian Navin Stanislaus's second mind for strategic judgement, live cases and decision-ready work." }, { property: "og:title", content: "Base Pairing — SEER.ai" }, { property: "og:description", content: "Claudian Navin Stanislaus's second mind for strategic judgement." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: Home,
 });
 
@@ -25,7 +26,8 @@ function Home() {
     queryKey: ["profile"],
     queryFn: async () => {
       const { data: u } = await supabase.auth.getUser();
-      const { data } = await supabase.from("profiles").select("*").eq("id", u.user!.id).single();
+      if (!u.user) return null;
+      const { data } = await supabase.from("profiles").select("*").eq("id", u.user.id).single();
       return data;
     },
   });
@@ -35,13 +37,16 @@ function Home() {
   });
 
   if (isLoading) return <AppShell><p className="text-sm text-muted-foreground">Loading…</p></AppShell>;
-  if (profile && !profile.onboarded) return <AppShell><Onboarding profile={profile} /></AppShell>;
+  if (profile && !profile.onboarded) return <AppShell><div className="mx-auto max-w-4xl"><BasePairingIdentity /><div className="mt-7"><Onboarding profile={profile} /></div></div></AppShell>;
 
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl">
-        <div className="seer-label mb-1">{profile?.workspace_name || "Workspace"}</div>
-        <h1 className="mb-8 text-2xl font-semibold tracking-tight">Good to see you, {profile?.display_name}.</h1>
+        <BasePairingIdentity />
+        <div className="mb-5 mt-7 flex flex-wrap items-center justify-between gap-2">
+          <h2 className="text-base font-medium">Good to see you{profile?.display_name ? `, ${profile.display_name}` : ""}.</h2>
+          <span className="seer-label">{profile?.workspace_name || "Workspace"}</span>
+        </div>
         <div className="grid gap-3 md:grid-cols-3">
           {MODES.map((m) => (
             <Link key={m.to} to={m.to} className="seer-panel block p-5 hover:border-primary">
