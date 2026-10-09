@@ -32,7 +32,8 @@ export const runSeerStage = createServerFn({ method: "POST" })
 
     // Rate limit: 20 AI runs per user per minute
     const since = new Date(Date.now() - 60_000).toISOString();
-    const { count } = await sb.from("ai_runs").select("id", { count: "exact", head: true }).gte("started_at", since);
+    const { count, error: limitError } = await sb.from("ai_runs").select("id", { count: "exact", head: true }).eq("owner_id", uid).gte("started_at", since);
+    if (limitError) throw new Error("Unable to verify AI usage. Please retry later.");
     if ((count ?? 0) >= 20) return { ok: false as const, error: "Rate limit: too many AI runs in the last minute. Please wait.", status: 429, runId: "", model: "", outputJson: "null", retrieved: [] as { id: string; name: string; status: string }[] };
 
     const { data: profile } = await sb.from("profiles").select("settings").eq("id", uid).maybeSingle();
@@ -54,10 +55,12 @@ export const runSeerStage = createServerFn({ method: "POST" })
         sb.from("evidence_items").select("id,statement,classification,direction,strength,reliability,independence,source_label,limitation,path_ids").eq("case_id", data.caseId).limit(80),
         sb.from("claims").select("id,claim,permitted_wording,falsifier").eq("case_id", data.caseId).limit(40),
         sb.from("options").select("label,description,scores,hard_constraint_fail,assumptions").eq("case_id", data.caseId),
-        sb.from("risks").select("risk,likelihood,consequence,risk_owner,severity").eq("case_id", data.caseId),
+         sb.from("risks").select("risk,likelihood,consequence,control,risk_owner,trigger_condition,severity").eq("case_id", data.caseId),
         sb.from("stakeholders").select("name,influence,alignment,resistance").eq("case_id", data.caseId),
       ]);
       if (c.error || !c.data) throw new Error("Case not found");
+      const contextError = [brief, state, paths, ev, claims, opts, risks, stk].find((r) => r.error)?.error;
+      if (contextError) throw new Error("Case context could not be loaded completely. Analysis has not started.");
       ctx.case = { title: c.data.title, client: c.data.client, case_owner: c.data.assignee, stage_owners: c.data.stage_owners, engagement_mode: c.data.engagement_mode, fields: c.data.fields, stage: c.data.stage };
       ctx.brief = brief.data;
       ctx.strategic_state = state.data?.state ?? null;
