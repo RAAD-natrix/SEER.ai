@@ -36,6 +36,13 @@
       "when": 1791470689253,
       "tag": "0004_keep_versions_immutable",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1791512712855,
+      "tag": "0005_private_workbench_guardrails",
+      "breakpoints": true
     }
   ]
 }
