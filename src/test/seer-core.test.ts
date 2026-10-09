@@ -21,8 +21,13 @@ describe("bounded interdisciplinary strategy", () => {
     expect(result).toContain("FINAL — OWNER APPROVED"); expect(result).toContain("Version 4"); expect(result).toContain("Internal working note; not a pitch."); expect(o.content).toContain("DRAFT FOR OWNER REVIEW");
   });
   it("versions the charter and constrains uncertainty and ethical analogies", () => {
-    expect(PROMPT_VERSION).toBe("charter-v1.1");
+    expect(PROMPT_VERSION).toBe("charter-v1.2");
     for (const term of ["Game theory", "Behavioural science", "consumer marketing", "Actuarial", "CROSS-SECTOR", "Kaizen", "Agile", "Six Sigma DMAIC", "NOT ASSESSED", "Never invent probabilities", "never treat customers as enemies"]) expect(SYSTEM_CHARTER).toContain(term);
+  });
+  it("removes stale approval wording while retaining document limitations", () => {
+    const md = deliverableMarkdown({ content: "**Status:** DRAFT — NOT OWNER APPROVED. Internal only.", status: "FINAL — OWNER APPROVED", version: 4, approved_at: null });
+    expect(md).not.toContain("NOT OWNER APPROVED");
+    expect(md).toContain("Internal only.");
   });
   it("preserves conventional alternatives and falsifiable cross-sector options", () => {
     expect(STAGES.OPTIONS_ANALYSIS.task).toContain("OPTION 0");
