@@ -4,6 +4,22 @@ export function BrandLogo({ className = "h-12", decorative = false }: { classNam
   return <img src={logoAsset.url} width={1081} height={1920} className={`w-auto shrink-0 object-contain ${className}`} alt={decorative ? "" : "Claudian Navin Stanislaus — gold DNA helix"} />;
 }
 
+export function WorkbenchIdentity({ area, title }: { area: string; title: string }) {
+  return (
+    <section className="mb-6 border-b border-primary/40 pb-5" aria-label={`${area} — Base Pairing`}>
+      <div className="flex items-center justify-between gap-4">
+        <div className="min-w-0">
+          <div className="seer-label text-primary">Base Pairing · SEER.ai / {area}</div>
+          <h1 className="mt-2 text-2xl font-semibold sm:text-3xl">{title}</h1>
+          <p className="mt-2 text-xs text-muted-foreground">Claudian Navin Stanislaus · Second mind. Symbiote.</p>
+        </div>
+        <BrandLogo className="h-20 sm:h-24" decorative />
+      </div>
+      <div className="brand-pairing-line mt-4"><span>Business</span><span className="brand-bond" aria-hidden="true" /><span className="text-primary">Judgement</span><span className="brand-bond" aria-hidden="true" /><span>Consumer</span></div>
+    </section>
+  );
+}
+
 export function BasePairingIdentity() {
   return (
     <section className="base-pairing-identity" aria-label="Base Pairing">

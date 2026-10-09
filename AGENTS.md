@@ -15,3 +15,4 @@
 - Treat interdisciplinary reasoning as conditional, falsifiable lenses and improvement as owned experiments, never as evidence of effectiveness by itself.
 - Write AI-run provenance only through an authorised server handler; require matching saved content and version for reviews, so client edits cannot forge review evidence.
 - Save deliverable edits through the locking version RPC so content, history, review invalidation and audit remain one transaction.
+- Recompute approval blockers from saved case records in the database trigger; reject unresolved material findings rather than trusting browser readiness or informal waivers.

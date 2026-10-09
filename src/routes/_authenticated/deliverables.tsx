@@ -2,7 +2,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell, PageTitle, StatusTag } from "@/components/seer/AppShell";
+import { AppShell, StatusTag } from "@/components/seer/AppShell";
+import { WorkbenchIdentity } from "@/components/seer/BrandIdentity";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/_authenticated/deliverables")({
   head: () => ({ meta: [{ title: "Deliverables — SEER.ai" }, { name: "description", content: "Every deliverable by date, version and approval status." }, { property: "og:title", content: "Deliverables — SEER.ai" }, { property: "og:description", content: "Every deliverable by date, version and approval status." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -17,7 +19,7 @@ function DeliverablesPage() {
     queryKey: ["deliverables-dash"],
     queryFn: async () => {
       const [o, c, v] = await Promise.all([
-        supabase.from("outputs").select("id,case_id,title,status,version,approved_at,created_at,updated_at,readiness").order("updated_at", { ascending: false }),
+        supabase.from("outputs").select("id,case_id,title,status,version,approved_at,created_at,updated_at,readiness,redteam").order("updated_at", { ascending: false }),
         supabase.from("cases").select("id,title,client").is("deleted_at", null),
         supabase.from("output_versions").select("output_id,version,created_at"),
       ]);
@@ -30,9 +32,9 @@ function DeliverablesPage() {
   const rows = (q.data ?? []).filter((x) => filter === "all" || x.status === "FINAL — OWNER APPROVED");
   return (
     <AppShell>
-      <PageTitle label="DELIVERABLES" title="All deliverables by date and version" />
+      <WorkbenchIdentity area="DELIVERABLES" title="All deliverables by date and version" />
       <div className="mb-4 flex gap-1">
-        {(["all", "final"] as const).map((f) => <button key={f} onClick={() => setFilter(f)} className={`rounded border px-3 py-1 font-mono text-xs ${filter === f ? "border-primary text-primary" : "text-muted-foreground"}`}>{f === "all" ? "ALL" : "FINAL ONLY"}</button>)}
+        {(["all", "final"] as const).map((f) => <Button key={f} size="sm" variant="outline" aria-pressed={filter === f} onClick={() => setFilter(f)} className={`font-mono text-xs ${filter === f ? "border-primary text-primary" : "text-muted-foreground"}`}>{f === "all" ? "ALL" : "FINAL ONLY"}</Button>)}
       </div>
       <div className="seer-panel overflow-x-auto">
         <table className="w-full text-sm">
@@ -42,7 +44,7 @@ function DeliverablesPage() {
               <tr key={x.id} className="hover:bg-secondary">
                 <td className="p-3"><Link to="/deliverable/$outputId" params={{ outputId: x.id }} className="hover:text-primary">{x.title}</Link></td>
                 <td className="p-3 text-xs text-muted-foreground">{x.kase.title}</td>
-                <td className="p-3"><StatusTag s={x.status} /></td>
+                <td className="p-3"><StatusTag s={x.status !== "FINAL — OWNER APPROVED" && ((x.redteam as { material?: string[] } | null)?.material?.length ?? 0) > 0 ? "READY SUBJECT TO CORRECTIONS" : x.status} /></td>
                 <td className="p-3 font-mono text-xs">v{x.version} · {x.versions} saved</td>
                 <td className="p-3 font-mono text-xs">{(x.readiness as { index?: number } | null)?.index ?? "—"}</td>
                 <td className="p-3 text-xs">{d(x.created_at)}</td>

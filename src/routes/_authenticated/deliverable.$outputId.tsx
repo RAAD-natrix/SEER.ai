@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell, PageTitle, StatusTag } from "@/components/seer/AppShell";
+import { AppShell, StatusTag } from "@/components/seer/AppShell";
 import { RedTeamView } from "@/components/seer/SandboxStage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -13,6 +13,7 @@ import { loadCaseBundle, readinessFor } from "@/lib/seer/caseData";
 import { deliverableMarkdown, exportDocx, exportPdf } from "@/lib/seer/export";
 import { audit, useStage } from "@/lib/seer/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { WorkbenchIdentity } from "@/components/seer/BrandIdentity";
 
 export const Route = createFileRoute("/_authenticated/deliverable/$outputId")({
   head: () => ({ meta: [{ title: "Final deliverable — SEER.ai" }, { name: "description", content: "Edit, review and approve a deliverable as FINAL." }, { property: "og:title", content: "Final deliverable — SEER.ai" }, { property: "og:description", content: "Edit, review and approve a deliverable as FINAL." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -63,21 +64,22 @@ function DeliverablePage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const rd = o.readiness as any; const qa = o.qa as any;
   const isFinal = o.status === FINAL;
+  const materialOpen = !isFinal && ((o.redteam as { material?: string[] } | null)?.material?.length ?? 0) > 0;
 
   return (
     <AppShell>
       <Link to="/work/$caseId" params={{ caseId: o.case_id }} className="seer-label hover:text-primary">← Back to case</Link>
-      <PageTitle label="FINAL DELIVERABLE" title={o.title} />
+      <WorkbenchIdentity area="FINAL DELIVERABLE" title={o.title} />
       <div className="seer-panel mb-4 flex flex-wrap items-center gap-2 p-3">
-        <StatusTag s={o.status} /><span className="seer-label">v{o.version}{rd ? ` · readiness ${rd.index}` : ""}</span>
+        <StatusTag s={materialOpen ? "READY SUBJECT TO CORRECTIONS" : o.status} /><span className="seer-label">v{o.version}{rd?.index !== undefined ? ` · readiness ${rd.index}` : ""}</span>
         <span className="mr-auto" />
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_REDTEAM", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { redteam: r.output as never }); }}>{busy === "OUTPUT_REDTEAM" ? "Running…" : "Run Red Team"}</Button>
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_QA", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { qa: r.output as never }); }}>{busy === "OUTPUT_QA" ? "Running…" : "Run QA"}</Button>
-        <Button size="sm" disabled={dirty || o.status !== "READY FOR OWNER APPROVAL"} onClick={async () => { const s = await recompute(o, { approved_at: new Date().toISOString() }); if (s === FINAL) { await audit("OUTPUT_FINAL_APPROVAL", "output", o.id); toast.success("Approved as FINAL."); } }}>Approve as FINAL</Button>
+        <Button size="sm" disabled={dirty || materialOpen || o.status !== "READY FOR OWNER APPROVAL"} onClick={async () => { const s = await recompute(o, { approved_at: new Date().toISOString() }); if (s === FINAL) { await audit("OUTPUT_FINAL_APPROVAL", "output", o.id); toast.success("Approved as FINAL."); } }}>Approve as FINAL</Button>
         <Button size="sm" variant="ghost" disabled={dirty} onClick={async () => { try { await exportDocx(o.title, deliverableMarkdown(o)); await audit("EXPORT", "output", o.id, { format: "docx" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Download failed"); } }}>Download Word</Button>
         <Button size="sm" variant="ghost" disabled={dirty} onClick={async () => { try { await exportPdf(o.title, deliverableMarkdown(o)); await audit("EXPORT", "output", o.id, { format: "pdf" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Download failed"); } }}>PDF</Button>
       </div>
-      {!isFinal && <p className="mb-3 text-xs text-muted-foreground">Saving an edit creates a new version and clears earlier Red Team, QA and approval. FINAL needs Red Team and QA with no fatal issues, no readiness blockers, and your approval.</p>}
+      {materialOpen && <p role="alert" className="mb-3 text-sm text-warning">Unresolved material Red Team findings. Revise the record and run Red Team and QA again before approval.</p>}
       {rd?.blockers?.length > 0 && <div className="seer-panel mb-4 p-3 text-xs"><div className="seer-label text-destructive">Blockers</div><ul className="list-disc pl-5">{rd.blockers.map((b: { label: string }) => <li key={b.label}>{b.label}</li>)}</ul></div>}
       <div className="grid gap-4 lg:grid-cols-2">
         <div className="space-y-2">

@@ -23,7 +23,8 @@ export const Route = createFileRoute("/.lovable/oauth/consent")({
     if (!data.session) throw redirect({ to: "/auth", search: { next: location.pathname + location.searchStr } });
   },
   loader: async ({ location }) => {
-    const id = new URLSearchParams(location.search).get("authorization_id")!;
+    const id = new URLSearchParams(location.search).get("authorization_id");
+    if (!id) throw new Error("Missing authorization_id");
     const { data, error } = await oauth().getAuthorizationDetails(id);
     if (error) throw new Error(error.message);
     const immediate = data?.redirect_url ?? data?.redirect_to;
@@ -47,6 +48,7 @@ function Consent() {
 
   async function decide(approve: boolean) {
     setBusy(true);
+    try {
     const { data, error } = approve
       ? await oauth().approveAuthorization(authorization_id)
       : await oauth().denyAuthorization(authorization_id);
@@ -54,6 +56,10 @@ function Consent() {
     const target = data?.redirect_url ?? data?.redirect_to;
     if (!target) { setBusy(false); setError("No redirect returned."); return; }
     window.location.href = target;
+    } catch {
+      setBusy(false);
+      setError("The connection could not be completed. Please start a fresh connection request.");
+    }
   }
 
   return (
@@ -62,6 +68,7 @@ function Consent() {
         <BrandLogo className="h-16" />
         <div className="seer-label">SEER.ai · Agent access</div>
         <h1 className="text-lg font-semibold">Connect {name} to your account</h1>
+        {details?.client?.redirect_uri && <p className="break-all text-xs text-muted-foreground">{details.client.redirect_uri}</p>}
         <p className="text-sm text-muted-foreground">It will be able to read the cases and deliverables you can see in SEER. It cannot change anything.</p>
         {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
         <div className="flex gap-2">

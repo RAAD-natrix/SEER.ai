@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell, Block, Bullets, PageTitle, StatusTag } from "@/components/seer/AppShell";
+import { AppShell, Block, Bullets, StatusTag } from "@/components/seer/AppShell";
+import { WorkbenchIdentity } from "@/components/seer/BrandIdentity";
 import { MethodCard, fullScan } from "@/components/seer/MethodCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -95,7 +96,7 @@ function Think() {
 
   return (
     <AppShell>
-      <PageTitle label="THINK" title="Teach SEER how I think" />
+      <WorkbenchIdentity area="THINK" title="Teach SEER how I think" />
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         <div className="space-y-4">
           <div className="seer-panel space-y-3 p-4">

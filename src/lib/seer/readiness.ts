@@ -23,6 +23,7 @@ export type ReadinessInput = {
   closedPaths: number;
   economicsClaimedUnsupported: boolean;
   openFatalRedTeam: boolean;
+  openMaterialRedTeam?: boolean;
   isImplementationOutput: boolean;
   isDecisionOutput: boolean;
   ownerApproved: boolean;
@@ -60,6 +61,7 @@ export function computeReadiness(i: ReadinessInput): Readiness {
   if (i.isImplementationOutput && i.risksWithOwner === 0) blockers.push({ label: "Implementation output without owners/dependencies", cap: 65 });
   if (i.economicsClaimedUnsupported) blockers.push({ label: "Material economics claimed without support", cap: 50 });
   if (i.openFatalRedTeam) blockers.push({ label: "Open fatal Red Team issue", cap: 50 });
+  if (i.openMaterialRedTeam) blockers.push({ label: "Unresolved material Red Team findings — revise and re-review", cap: 65 });
   if (i.closedPaths === 0) blockers.push({ label: "No closed/selected thought path", cap: 80 });
   const cap = blockers.reduce((m, b) => Math.min(m, b.cap), 100);
   const index = Math.min(raw, cap);

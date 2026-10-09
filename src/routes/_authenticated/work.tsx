@@ -3,7 +3,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell, PageTitle, StatusTag } from "@/components/seer/AppShell";
+import { AppShell, StatusTag } from "@/components/seer/AppShell";
+import { WorkbenchIdentity } from "@/components/seer/BrandIdentity";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +42,7 @@ function CaseList() {
 
   return (
     <AppShell>
-      <PageTitle label="WORK" title="Take a live brief from question to decision" />
+      <WorkbenchIdentity area="WORK" title="Take a live brief from question to decision" />
       <div className="grid gap-6 lg:grid-cols-[360px_1fr]">
         <div className="seer-panel space-y-3 p-4">
           <div className="seer-label">New case</div>

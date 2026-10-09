@@ -123,14 +123,14 @@ function Deliverables({ caseId }: { caseId: string }) {
             <div className="seer-panel p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="mr-auto font-medium">{o.title}</h2>
-                <StatusTag s={o.status} />
+                <StatusTag s={o.status !== "FINAL — OWNER APPROVED" && ((o.redteam as { material?: string[] } | null)?.material?.length ?? 0) > 0 ? "READY SUBJECT TO CORRECTIONS" : o.status} />
                 <Link to="/deliverable/$outputId" params={{ outputId: o.id }} className="rounded border border-primary px-2 py-1 text-xs text-primary">Open final deliverable screen →</Link>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Button size="sm" variant="outline" disabled={!!busy} onClick={async () => { const r = await run({ stage: "OUTPUT_REDTEAM", caseId, outputId: o.id }); if (r) recompute(o, { redteam: r.output as never }); }}>Run Red Team</Button>
                 <Button size="sm" variant="outline" disabled={!!busy} onClick={async () => { const r = await run({ stage: "OUTPUT_QA", caseId, outputId: o.id }); if (r) recompute(o, { qa: r.output as never }); }}>Run QA</Button>
                 <Button size="sm" variant="outline" onClick={() => setEdit(o.content)}>Edit</Button>
-                <Button size="sm" disabled={o.status !== "READY FOR OWNER APPROVAL"} onClick={async () => { const status = await recompute(o, { approved_at: new Date().toISOString() }); if (status === "FINAL — OWNER APPROVED") await audit("OUTPUT_FINAL_APPROVAL", "output", o.id); }}>Approve as FINAL</Button>
+                <Button size="sm" disabled={o.status !== "READY FOR OWNER APPROVAL" || ((o.redteam as { material?: string[] } | null)?.material?.length ?? 0) > 0} onClick={async () => { const status = await recompute(o, { approved_at: new Date().toISOString() }); if (status === "FINAL — OWNER APPROVED") await audit("OUTPUT_FINAL_APPROVAL", "output", o.id); }}>Approve as FINAL</Button>
                 <span className="mx-1 border-l" />
                 <Button size="sm" variant="ghost" onClick={() => { exportMarkdown(o.title, deliverableMarkdown(o)); audit("EXPORT", "output", o.id, { format: "md" }); }}>MD</Button>
                 <Button size="sm" variant="ghost" onClick={() => { exportJSON(o.title, { ...o, footer: "Generated using SEER.ai" }); audit("EXPORT", "output", o.id, { format: "json" }); }}>JSON</Button>
