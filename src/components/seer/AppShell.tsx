@@ -2,7 +2,7 @@ import { Link, useNavigate } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { APP_VERSION } from "@/lib/seer/charter";
-import { BrandLogo } from "@/components/seer/BrandIdentity";
+import { BrandLogo, WorkbenchIdentity } from "@/components/seer/BrandIdentity";
 import { Button } from "@/components/ui/button";
 
 const primary = [
@@ -78,13 +78,10 @@ export function AppShell({ children }: { children: ReactNode }) {
 
 export function PageTitle({ label, title, children }: { label?: string; title: string; children?: ReactNode }) {
   return (
-    <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
-      <div>
-        {label && <div className="seer-label">{label}</div>}
-        <h1 className="text-xl font-semibold tracking-tight">{title}</h1>
-      </div>
-      {children}
-    </div>
+    <>
+      <WorkbenchIdentity area={label ?? "SETTINGS"} title={title} />
+      {children && <div className="-mt-3 mb-6 flex flex-wrap justify-end gap-2">{children}</div>}
+    </>
   );
 }
 
