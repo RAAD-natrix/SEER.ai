@@ -107,7 +107,7 @@ export function MethodCard({ rule, onChange }: { rule: Rule; onChange: () => voi
         {["PENDING_REVIEW", "WITHDRAWN"].includes(rule.status) && <Button size="sm" onClick={() => setStatus("CANDIDATE", "METHOD_ACTIVATED_CASE")}>Activate (this case only)</Button>}
         {["PENDING_REVIEW", "CANDIDATE", "WITHDRAWN"].includes(rule.status) && <Button size="sm" onClick={() => setStatus("CANONICAL", "METHOD_TRANSFER_APPROVED")}>Approve cross-project transfer</Button>}
         {rule.status !== "RETIRED" && <Button size="sm" variant="ghost" onClick={() => setStatus("RETIRED", "METHOD_RETIRED")}>Retire</Button>}
-        {["RETIRED", "WITHDRAWN"].includes(rule.status) && rule.status === "RETIRED" && <Button size="sm" variant="ghost" onClick={() => setStatus(c?.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW", "METHOD_RESTORED")}>Restore for review</Button>}
+        {rule.status === "RETIRED" && <Button size="sm" variant="ghost" onClick={() => setStatus(c?.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW", "METHOD_RESTORED")}>Restore for review</Button>}
       </div>
       {!["RETIRED", "BLOCKED_FOR_GENERAL_REUSE"].includes(rule.status) && <LearningGovernance rule={rule} onChange={onChange} />}
     </div>

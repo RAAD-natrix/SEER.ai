@@ -1,3 +1,4 @@
+import { OutcomeMethodFeedback } from "./OutcomeMethodFeedback";
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
@@ -238,7 +239,7 @@ function Results({ caseId }: { caseId: string }) {
           <p className="text-xs text-muted-foreground">One outcome does not become a universal rule.</p>
         </div>
         {outcomes.data?.map((x) => (
-          <div key={x.id} className="seer-panel p-3 text-sm"><div className="seer-label">Outcome · {new Date(x.created_at).toLocaleDateString("en-GB")} · usefulness {x.usefulness ?? "—"}</div><p>{x.actual_result}</p>{x.retain && <Block label="Retain"><p>{x.retain}</p></Block>}</div>
+          <div key={x.id} className="seer-panel p-3 text-sm"><div className="seer-label">Outcome · {new Date(x.created_at).toLocaleDateString("en-GB")} · usefulness {x.usefulness ?? "—"}</div><p>{x.actual_result}</p>{x.retain && <Block label="Retain"><p>{x.retain}</p></Block>}<OutcomeMethodFeedback caseId={caseId} outcomeId={x.id} /></div>
         ))}
         {!outcomes.data?.length && <Bullets items={[]} empty="No outcomes recorded yet." />}
       </div>
