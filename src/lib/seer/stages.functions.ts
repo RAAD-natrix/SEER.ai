@@ -26,6 +26,11 @@ export const runSeerStage = createServerFn({ method: "POST" })
     const sb = context.supabase;
     const uid = context.userId;
 
+    const { data: member, error: roleError } = await sb.rpc("is_team_member", { _uid: uid });
+    if (roleError || !member) throw new Error("Team access is required.");
+    // Only this authenticated, authorised server path may write review provenance.
+    const { supabaseAdmin: ledger } = await import("@/integrations/supabase/client.server");
+
     if (!(data.stage in STAGES)) throw new Error("Unknown stage");
     const stage = data.stage as keyof typeof STAGES;
     const def = STAGES[stage];
@@ -151,7 +156,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
       data.text ? `<untrusted_data name="owner_input">\n${data.text}\n</untrusted_data>` : "",
     ].filter(Boolean).join("\n\n");
 
-    const { data: run, error: runErr } = await sb
+    const { data: run, error: runErr } = await ledger
       .from("ai_runs")
       .insert({
         owner_id: uid, case_id: data.caseId ?? null, path_id: data.pathId ?? null, stage,
@@ -164,7 +169,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
 
     try {
       const res = await runStructured({ system: SYSTEM_CHARTER, prompt, schema: def.schema, effort: depth === "DEEP" ? "high" : depth === "QUICK" ? "low" : "medium" });
-       const { error: saveError } = await sb.from("ai_runs").update({ status: "COMPLETED", model: res.model, output: res.output as never, usage: res.usage as never, completed_at: new Date().toISOString() }).eq("id", run.id);
+        const { error: saveError } = await ledger.from("ai_runs").update({ status: "COMPLETED", model: res.model, output: res.output as never, usage: res.usage as never, completed_at: new Date().toISOString() }).eq("id", run.id);
        if (saveError) throw new Error("Analysis completed but its audit record could not be saved. Retry before using the result.");
       return { ok: true as const, runId: run.id, model: res.model, outputJson: JSON.stringify(res.output), retrieved, error: "", status: 200 };
     } catch (e) {
@@ -172,7 +177,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
        const name = e instanceof Error ? e.name : "";
        const failureClass = status === 429 ? "RATE_LIMIT" : e instanceof GatewayError ? "GATEWAY" : /schema|output|validation/i.test(name) ? "SCHEMA" : /fetch|network|timeout/i.test(e instanceof Error ? e.message : "") ? "NETWORK" : /audit record/.test(e instanceof Error ? e.message : "") ? "PERSISTENCE" : "UNKNOWN";
        const msg = e instanceof GatewayError ? (status === 402 ? "AI credits are exhausted." : status === 429 ? "AI rate limit reached. Please wait and retry." : "AI gateway request failed. Please retry or check System Status.") : `AI run failed (${failureClass}). No usable result was saved; please retry.`;
-       await sb.from("ai_runs").update({ status: "FAILED", error: msg, failure_class: failureClass, completed_at: new Date().toISOString() }).eq("id", run.id);
+        await ledger.from("ai_runs").update({ status: "FAILED", error: msg, failure_class: failureClass, completed_at: new Date().toISOString() }).eq("id", run.id);
       return { ok: false as const, error: msg, status, runId: run.id, model: "", outputJson: "null", retrieved: [] as { id: string; name: string; status: string }[] };
     }
   });

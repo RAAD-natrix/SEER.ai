@@ -42,8 +42,9 @@ function DeliverablePage() {
     let status = "NOT READY";
     if (m.redteam && m.qa) status = rd.blockers.length || qaFails || rt?.fatal?.length ? "READY SUBJECT TO CORRECTIONS" : "READY FOR OWNER APPROVAL";
     if (m.approved_at && rd.canBeFinal && !qaFails && !rt?.fatal?.length) status = FINAL;
-    const { error } = await supabase.from("outputs").update({ ...patch, readiness: rd as never, status }).eq("id", out.id);
+    const { data: saved, error } = await supabase.from("outputs").update({ ...patch, readiness: rd as never, status }).eq("id", out.id).eq("version", out.version).eq("content", out.content).select("id").maybeSingle();
     if (error) { toast.error(error.message); return null; }
+    if (!saved) { toast.error("Deliverable changed. Reload and run reviews on the latest version."); await q.refetch(); return null; }
     await q.refetch(); versions.refetch();
     return status;
   }
@@ -51,11 +52,9 @@ function DeliverablePage() {
   async function save() {
     if (!o) return;
     if (!reason.trim()) { toast.error("Give a short reason for this edit."); return; }
-    const v = o.version + 1;
-    const { error } = await supabase.from("output_versions").insert({ owner_id: o.owner_id, output_id: o.id, version: v, content: text, status: "NOT READY" });
+    const { data: v, error } = await supabase.rpc("save_output_version", { _output_id: o.id, _expected_version: o.version, _content: text, _reason: reason });
     if (error) { toast.error(error.message); return; }
-    await recompute(o, { content: text, version: v, approved_at: null, redteam: null, qa: null });
-    await audit("OUTPUT_EDITED", "output", o.id, { version: v, reason });
+    await q.refetch(); await versions.refetch();
     setReason("");
     toast.success(`Saved as v${v}. Run Red Team and QA again before approving.`);
   }
@@ -86,7 +85,7 @@ function DeliverablePage() {
           <Textarea aria-label="Deliverable text" rows={30} value={text} onChange={(e) => setText(e.target.value)} className="font-mono text-xs" />
           <div className="flex gap-2"><Input placeholder="Reason for edit" value={reason} onChange={(e) => setReason(e.target.value)} /><Button disabled={!dirty} onClick={save}>Save version</Button>{dirty && <Button variant="ghost" onClick={() => setText(o.content)}>Discard</Button>}</div>
         </div>
-        <div className="space-y-2"><div className="seer-label">Preview</div><div className="seer-panel seer-prose max-h-[75vh] overflow-y-auto p-5 text-sm"><ReactMarkdown>{text}</ReactMarkdown></div></div>
+        <div className="space-y-2"><div className="seer-label">Preview</div><div className="seer-panel seer-prose max-h-[75vh] overflow-y-auto p-5 text-sm"><ReactMarkdown>{dirty ? text : deliverableMarkdown(o)}</ReactMarkdown></div></div>
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         {o.redteam && <div className="seer-panel space-y-2 p-4"><div className="seer-label">Red Team</div><RedTeamView r={o.redteam} /></div>}

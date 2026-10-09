@@ -67,18 +67,18 @@ function Deliverables({ caseId }: { caseId: string }) {
     let status = "NOT READY";
     if (merged.redteam && merged.qa) status = rd.blockers.length || qaFails || rt?.fatal?.length ? "READY SUBJECT TO CORRECTIONS" : "READY FOR OWNER APPROVAL";
     if (merged.approved_at && rd.canBeFinal && !qaFails && !rt?.fatal?.length) status = "FINAL — OWNER APPROVED";
-    const { error } = await supabase.from("outputs").update({ ...patch, readiness: rd as never, status }).eq("id", out.id);
+    const { data: saved, error } = await supabase.from("outputs").update({ ...patch, readiness: rd as never, status }).eq("id", out.id).eq("version", out.version).eq("content", out.content).select("id").maybeSingle();
     if (error) { toast.error(error.message); return null; }
+    if (!saved) { toast.error("Deliverable changed. Reload and review the latest version."); outputs.refetch(); return null; }
     outputs.refetch(); bundle.refetch();
     return status;
   }
 
   async function saveEdit() {
     if (!o || edit === null) return;
-    const v = o.version + 1;
-    await supabase.from("output_versions").insert({ owner_id: o.owner_id, output_id: o.id, version: v, content: edit, status: o.status });
-    // Editing invalidates approval and prior reviews.
-    await recompute(o, { content: edit, version: v, approved_at: null, redteam: null, qa: null });
+    const { error } = await supabase.rpc("save_output_version", { _output_id: o.id, _expected_version: o.version, _content: edit, _reason: "Edited in Outcomes" });
+    if (error) { toast.error(error.message); return; }
+    outputs.refetch(); bundle.refetch();
     setEdit(null);
     versions.refetch();
   }
@@ -168,7 +168,7 @@ function Deliverables({ caseId }: { caseId: string }) {
             {edit !== null ? (
               <div className="seer-panel space-y-2 p-4"><Textarea rows={24} value={edit} onChange={(e) => setEdit(e.target.value)} /><div className="flex gap-2"><Button size="sm" onClick={saveEdit}>Save new version</Button><Button size="sm" variant="ghost" onClick={() => setEdit(null)}>Cancel</Button></div></div>
             ) : (
-              <div className="seer-panel seer-prose p-5 text-sm"><ReactMarkdown>{o.content}</ReactMarkdown></div>
+              <div className="seer-panel seer-prose p-5 text-sm"><ReactMarkdown>{deliverableMarkdown(o)}</ReactMarkdown></div>
             )}
             {o.redteam && <div className="seer-panel space-y-2 p-4"><div className="seer-label">Red Team</div><RedTeamView r={o.redteam} /></div>}
             {o.qa && (

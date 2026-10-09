@@ -20,7 +20,8 @@ export function deliverableMarkdown(o: { content: string; status: string; versio
   return /^\*\*Status:\*\*.*$/im.test(o.content)
     ? o.content.replace(/^\*\*Status:\*\*.*$/im, (line) => {
       const parts = line.split(" — ").slice(1);
-      if (/^(NOT OWNER APPROVED|OWNER APPROVED)([. ]|$)/i.test(parts[0] ?? "")) parts[0] = parts[0].replace(/^(NOT OWNER APPROVED|OWNER APPROVED)\.?\s*/i, "");
+      const first = parts[0] ?? "";
+      if (/^(NOT OWNER APPROVED|OWNER APPROVED)([. ]|$)/i.test(first)) parts[0] = first.replace(/^(NOT OWNER APPROVED|OWNER APPROVED)\.?\s*/i, "");
       const caveat = parts.join(" — ").trim();
       return status + (caveat ? " — " + caveat : "");
     })
@@ -41,8 +42,15 @@ function parse(md: string): Block[] {
     if (l.startsWith("## ")) return { kind: "h2", text: l.slice(3) };
     if (l.startsWith("# ")) return { kind: "h1", text: l.slice(2) };
     if (/^\s*([-*]|\d+\.)\s+/.test(l)) return { kind: "li", text: l.replace(/^\s*([-*]|\d+\.)\s+/, "") };
+    // Render Markdown table rows as readable labelled lines in both formats,
+    // rather than leaking pipe delimiters and separator syntax into the file.
+    if (/^\s*\|.*\|\s*$/.test(l)) {
+      const cells = l.trim().slice(1, -1).split("|").map((cell) => cell.trim());
+      if (cells.every((cell) => /^:?-+:?$/.test(cell))) return { kind: "p", text: "" };
+      return { kind: "p", text: cells.join(" — ") };
+    }
     return { kind: "p", text: l };
-  });
+  }).filter((block) => block.text) as Block[];
 }
 const strip = (t: string) => t.replace(/\*\*(.*?)\*\*/g, "$1").replace(/\*(.*?)\*/g, "$1").replace(/`(.*?)`/g, "$1");
 

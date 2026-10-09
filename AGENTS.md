@@ -13,3 +13,5 @@
 - Import uploaded brand media through its Lovable Assets pointer; retain real raster copies only for browser and installed-app icons because those need static public files.
 - Centralise Word/PDF presentation in `documentBrand.ts` and convert the asset-pointer logo to PNG in the browser so both formats use genuine embedded media.
 - Treat interdisciplinary reasoning as conditional, falsifiable lenses and improvement as owned experiments, never as evidence of effectiveness by itself.
+- Write AI-run provenance only through an authorised server handler; require matching saved content and version for reviews, so client edits cannot forge review evidence.
+- Save deliverable edits through the locking version RPC so content, history, review invalidation and audit remain one transaction.
