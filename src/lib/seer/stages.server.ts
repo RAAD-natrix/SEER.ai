@@ -137,7 +137,7 @@ export const STAGES = {
   },
   OUTPUT_DRAFT: {
     schema: z.object({ markdown: str, not_assessed: S }),
-    task: "Draft the selected deliverable in Markdown following the template structure exactly. Use only facts in the case record. Where data is missing, write NOT ASSESSED and list it. Never invent figures. Label status as DRAFT — NOT OWNER APPROVED.",
+    task: "Draft the selected deliverable in Markdown following the template structure exactly. Use only facts in the case record. Where data is missing, write NOT ASSESSED and list it. Never invent figures. Label status as DRAFT — NOT OWNER APPROVED. Exports support headings, paragraphs and bullet lists: do not use tables, HTML or fenced code. Respect the template depth; for a 1–2 page Strategic Clarity Record aim for at most 650 words, without dropping sections, evidence boundaries or consequential caveats. The page limit must still be verified on rendered Word and PDF, never claimed from word count alone.",
   },
   OUTPUT_REDTEAM: { schema: redteam, task: "RED TEAM this deliverable as a sceptical CEO, board director, CMO, CFO, operating leader and affected stakeholder. Do not hide fatal or material findings." },
   OUTPUT_QA: {

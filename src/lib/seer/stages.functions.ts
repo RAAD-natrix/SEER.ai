@@ -104,6 +104,8 @@ export const runSeerStage = createServerFn({ method: "POST" })
       if (!o) throw new Error("Output not found");
       ctx.output = { title: o.title, template: templateByKey(o.template_key), content: clip(o.content, 40000) };
       inputIds.output_id = o.id;
+      inputIds.output_version = o.version;
+      if (data.caseId && o.case_id !== data.caseId) throw new Error("Output does not belong to case");
     }
     if (stage === "OUTPUT_DRAFT" || stage === "OUTPUT_SELECT") {
       const key = data.extra?.["template_key"] as string | undefined;

@@ -4,6 +4,7 @@ import { computeReadiness, type ReadinessInput } from "@/lib/seer/readiness";
 import { SYSTEM_CHARTER, PROMPT_VERSION } from "@/lib/seer/charter";
 import { STAGES } from "@/lib/seer/stages.server";
 import { TEMPLATES } from "@/lib/seer/templates";
+import { deliverableMarkdown } from "@/lib/seer/export";
 
 const base: ReadinessInput = {
   hasQuestion: true, briefFieldsFilled: 10, triageDone: true, evidenceCount: 10, evidenceWithSource: 10,
@@ -14,6 +15,11 @@ const base: ReadinessInput = {
 };
 
 describe("bounded interdisciplinary strategy", () => {
+  it("exports current approval status without mutating approved content or caveats", () => {
+    const o = { content: "**Status:** DRAFT FOR OWNER REVIEW — Internal working note; not a pitch.\n\n## NEXT STEP\nNavin", status: "FINAL — OWNER APPROVED", version: 4, approved_at: "2026-10-08T12:00:00Z" };
+    const result = deliverableMarkdown(o);
+    expect(result).toContain("FINAL — OWNER APPROVED"); expect(result).toContain("Version 4"); expect(result).toContain("Internal working note; not a pitch."); expect(o.content).toContain("DRAFT FOR OWNER REVIEW");
+  });
   it("versions the charter and constrains uncertainty and ethical analogies", () => {
     expect(PROMPT_VERSION).toBe("charter-v1.1");
     for (const term of ["Game theory", "Behavioural science", "consumer marketing", "Actuarial", "CROSS-SECTOR", "Kaizen", "Agile", "Six Sigma DMAIC", "NOT ASSESSED", "Never invent probabilities", "never treat customers as enemies"]) expect(SYSTEM_CHARTER).toContain(term);
