@@ -191,5 +191,6 @@
   a { text-decoration: underline; }
   .overflow-x-auto, .overflow-y-auto, [class*="max-h-"] { overflow: visible !important; max-height: none !important; }
   h1, h2, h3 { break-after: avoid; }
-  .grid { display: block !important; }
+  .grid, .flex-col, main { display: block !important; }
+  .min-h-screen { min-height: 0 !important; }
 }
