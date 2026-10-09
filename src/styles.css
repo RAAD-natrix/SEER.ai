@@ -183,7 +183,7 @@
   html, body { background: #fff !important; color: #000 !important; font-size: 10.5pt; }
   * { color: #000 !important; background: transparent !important; box-shadow: none !important; }
   .no-print, nav, aside, button, input, textarea, [role="toolbar"], .skip-link { display: none !important; }
-  .seer-panel { border: 0.5pt solid #777 !important; break-inside: avoid; }
+  .seer-panel { border: 0.5pt solid #777 !important; }
   .seer-label, small, .text-xs { font-size: 9pt !important; }
   table { width: 100% !important; table-layout: fixed; border-collapse: collapse; }
   th, td { overflow-wrap: anywhere; word-break: break-word; border: 0.5pt solid #999; padding: 3pt; font-size: 9pt; }
