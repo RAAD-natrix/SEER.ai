@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { BrandLogo } from "@/components/seer/BrandIdentity";
 
 export const Route = createFileRoute("/reset-password")({
   head: () => ({
@@ -47,6 +48,8 @@ function ResetPage() {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="seer-panel w-full max-w-sm p-6">
+        <BrandLogo className="mb-4 h-16" />
+        <div className="seer-label mb-2 text-primary">SEER.ai · Base Pairing</div>
         <h1 className="mb-4 text-xl font-semibold tracking-tight">Set a new password</h1>
         {!ready ? (
           <p className="text-sm text-muted-foreground">Open this page from the reset link in your email.</p>

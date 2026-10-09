@@ -37,7 +37,7 @@ function Home() {
   });
 
   if (isLoading) return <AppShell><p className="text-sm text-muted-foreground">Loading…</p></AppShell>;
-  if (profile && !profile.onboarded) return <AppShell><Onboarding profile={profile} /></AppShell>;
+  if (profile && !profile.onboarded) return <AppShell><div className="mx-auto max-w-4xl"><BasePairingIdentity /><div className="mt-7"><Onboarding profile={profile} /></div></div></AppShell>;
 
   return (
     <AppShell>
