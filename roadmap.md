@@ -1,5 +1,5 @@
 # SEER.ai roadmap
-- [ ] Incorporate Navin's gold DNA brand, Base Pairing identity and verify the workbench appearance
+- [x] Incorporate Navin's gold DNA brand, Base Pairing identity and verify the workbench appearance
 - [x] Auth, schema, RLS, private storage, method starters
 - [x] THINK with contamination firewall
 - [x] WORK / Brief + triage
