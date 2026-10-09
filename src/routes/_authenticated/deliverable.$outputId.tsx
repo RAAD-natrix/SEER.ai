@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { loadCaseBundle, readinessFor } from "@/lib/seer/caseData";
-import { exportDocx, exportPdf } from "@/lib/seer/export";
+import { deliverableMarkdown, exportDocx, exportPdf } from "@/lib/seer/export";
 import { audit, useStage } from "@/lib/seer/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -43,7 +43,7 @@ function DeliverablePage() {
     if (m.redteam && m.qa) status = rd.blockers.length || qaFails || rt?.fatal?.length ? "READY SUBJECT TO CORRECTIONS" : "READY FOR OWNER APPROVAL";
     if (m.approved_at && rd.canBeFinal && !qaFails && !rt?.fatal?.length) status = FINAL;
     const { error } = await supabase.from("outputs").update({ ...patch, readiness: rd as never, status }).eq("id", out.id);
-    if (error) toast.error(error.message);
+    if (error) { toast.error(error.message); return null; }
     await q.refetch(); versions.refetch();
     return status;
   }
@@ -75,8 +75,8 @@ function DeliverablePage() {
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_REDTEAM", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { redteam: r.output as never }); }}>{busy === "OUTPUT_REDTEAM" ? "Running…" : "Run Red Team"}</Button>
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_QA", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { qa: r.output as never }); }}>{busy === "OUTPUT_QA" ? "Running…" : "Run QA"}</Button>
         <Button size="sm" disabled={dirty || o.status !== "READY FOR OWNER APPROVAL"} onClick={async () => { const s = await recompute(o, { approved_at: new Date().toISOString() }); if (s === FINAL) { await audit("OUTPUT_FINAL_APPROVAL", "output", o.id); toast.success("Approved as FINAL."); } }}>Approve as FINAL</Button>
-        <Button size="sm" variant="ghost" disabled={dirty} onClick={() => { exportDocx(o.title, o.content); audit("EXPORT", "output", o.id, { format: "docx" }); }}>Download Word</Button>
-        <Button size="sm" variant="ghost" disabled={dirty} onClick={() => { exportPdf(o.title, o.content); audit("EXPORT", "output", o.id, { format: "pdf" }); }}>PDF</Button>
+        <Button size="sm" variant="ghost" disabled={dirty} onClick={async () => { try { await exportDocx(o.title, deliverableMarkdown(o)); await audit("EXPORT", "output", o.id, { format: "docx" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Download failed"); } }}>Download Word</Button>
+        <Button size="sm" variant="ghost" disabled={dirty} onClick={async () => { try { await exportPdf(o.title, deliverableMarkdown(o)); await audit("EXPORT", "output", o.id, { format: "pdf" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Download failed"); } }}>PDF</Button>
       </div>
       {!isFinal && <p className="mb-3 text-xs text-muted-foreground">Saving an edit creates a new version and clears earlier Red Team, QA and approval. FINAL needs Red Team and QA with no fatal issues, no readiness blockers, and your approval.</p>}
       {rd?.blockers?.length > 0 && <div className="seer-panel mb-4 p-3 text-xs"><div className="seer-label text-destructive">Blockers</div><ul className="list-disc pl-5">{rd.blockers.map((b: { label: string }) => <li key={b.label}>{b.label}</li>)}</ul></div>}

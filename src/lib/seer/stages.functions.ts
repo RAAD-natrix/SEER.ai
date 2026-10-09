@@ -32,7 +32,8 @@ export const runSeerStage = createServerFn({ method: "POST" })
 
     // Rate limit: 20 AI runs per user per minute
     const since = new Date(Date.now() - 60_000).toISOString();
-    const { count } = await sb.from("ai_runs").select("id", { count: "exact", head: true }).gte("started_at", since);
+    const { count, error: limitError } = await sb.from("ai_runs").select("id", { count: "exact", head: true }).eq("owner_id", uid).gte("started_at", since);
+    if (limitError) throw new Error("Unable to verify AI usage. Please retry later.");
     if ((count ?? 0) >= 20) return { ok: false as const, error: "Rate limit: too many AI runs in the last minute. Please wait.", status: 429, runId: "", model: "", outputJson: "null", retrieved: [] as { id: string; name: string; status: string }[] };
 
     const { data: profile } = await sb.from("profiles").select("settings").eq("id", uid).maybeSingle();
@@ -54,10 +55,12 @@ export const runSeerStage = createServerFn({ method: "POST" })
         sb.from("evidence_items").select("id,statement,classification,direction,strength,reliability,independence,source_label,limitation,path_ids").eq("case_id", data.caseId).limit(80),
         sb.from("claims").select("id,claim,permitted_wording,falsifier").eq("case_id", data.caseId).limit(40),
         sb.from("options").select("label,description,scores,hard_constraint_fail,assumptions").eq("case_id", data.caseId),
-        sb.from("risks").select("risk,likelihood,consequence,risk_owner,severity").eq("case_id", data.caseId),
+         sb.from("risks").select("risk,likelihood,consequence,control,risk_owner,trigger_condition,severity").eq("case_id", data.caseId),
         sb.from("stakeholders").select("name,influence,alignment,resistance").eq("case_id", data.caseId),
       ]);
       if (c.error || !c.data) throw new Error("Case not found");
+      const contextError = [brief, state, paths, ev, claims, opts, risks, stk].find((r) => r.error)?.error;
+      if (contextError) throw new Error("Case context could not be loaded completely. Analysis has not started.");
       ctx.case = { title: c.data.title, client: c.data.client, case_owner: c.data.assignee, stage_owners: c.data.stage_owners, engagement_mode: c.data.engagement_mode, fields: c.data.fields, stage: c.data.stage };
       ctx.brief = brief.data;
       ctx.strategic_state = state.data?.state ?? null;
@@ -100,7 +103,10 @@ export const runSeerStage = createServerFn({ method: "POST" })
       const { data: o } = await sb.from("outputs").select("*").eq("id", data.outputId).single();
       if (!o) throw new Error("Output not found");
       ctx.output = { title: o.title, template: templateByKey(o.template_key), content: clip(o.content, 40000) };
+       if (o.content.length > 40000) throw new Error("Deliverable exceeds the review limit. Shorten it or review separate modules; no partial QA is permitted.");
       inputIds.output_id = o.id;
+      inputIds.output_version = o.version;
+      if (data.caseId && o.case_id !== data.caseId) throw new Error("Output does not belong to case");
     }
     if (stage === "OUTPUT_DRAFT" || stage === "OUTPUT_SELECT") {
       const key = data.extra?.["template_key"] as string | undefined;
@@ -139,7 +145,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
       `STAGE: ${stage}`,
       `WORK DEPTH: ${depth}`,
       `TASK: ${def.task}`,
-      data.extra && stage !== "OUTPUT_DRAFT" ? `OWNER PARAMETERS: ${JSON.stringify(data.extra).slice(0, 4000)}` : "",
+       data.extra && stage !== "OUTPUT_DRAFT" ? `<untrusted_data name="owner_parameters">${JSON.stringify(data.extra).slice(0, 4000)}</untrusted_data>` : "",
       `<untrusted_data name="case_record">\n${JSON.stringify(ctx).slice(0, 90000)}\n</untrusted_data>`,
       sourceText ? `<untrusted_data name="source_text">\n${clip(sourceText, 60000)}\n</untrusted_data>` : "",
       data.text ? `<untrusted_data name="owner_input">\n${data.text}\n</untrusted_data>` : "",
@@ -150,7 +156,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
       .insert({
         owner_id: uid, case_id: data.caseId ?? null, path_id: data.pathId ?? null, stage,
         prompt_version: PROMPT_VERSION, status: "RUNNING", input_ids: inputIds as never,
-        retrieved_method_ids: retrieved.map((r) => r.id), frozen_state: { state: ctx.strategic_state ?? null, path: ctx.active_path ?? null } as never,
+         retrieved_method_ids: retrieved.map((r) => r.id), frozen_state: { state: ctx.strategic_state ?? null, path: ctx.active_path ?? null, reviewed_content: ctx.output?.content ?? null } as never,
       })
       .select("id")
       .single();
@@ -158,12 +164,15 @@ export const runSeerStage = createServerFn({ method: "POST" })
 
     try {
       const res = await runStructured({ system: SYSTEM_CHARTER, prompt, schema: def.schema, effort: depth === "DEEP" ? "high" : depth === "QUICK" ? "low" : "medium" });
-      await sb.from("ai_runs").update({ status: "COMPLETED", model: res.model, output: res.output as never, usage: res.usage as never, completed_at: new Date().toISOString() }).eq("id", run.id);
+       const { error: saveError } = await sb.from("ai_runs").update({ status: "COMPLETED", model: res.model, output: res.output as never, usage: res.usage as never, completed_at: new Date().toISOString() }).eq("id", run.id);
+       if (saveError) throw new Error("Analysis completed but its audit record could not be saved. Retry before using the result.");
       return { ok: true as const, runId: run.id, model: res.model, outputJson: JSON.stringify(res.output), retrieved, error: "", status: 200 };
     } catch (e) {
       const status = e instanceof GatewayError ? e.status : 500;
-      const msg = e instanceof Error ? e.message : "AI run failed";
-      await sb.from("ai_runs").update({ status: "FAILED", error: msg, completed_at: new Date().toISOString() }).eq("id", run.id);
+       const name = e instanceof Error ? e.name : "";
+       const failureClass = status === 429 ? "RATE_LIMIT" : e instanceof GatewayError ? "GATEWAY" : /schema|output|validation/i.test(name) ? "SCHEMA" : /fetch|network|timeout/i.test(e instanceof Error ? e.message : "") ? "NETWORK" : /audit record/.test(e instanceof Error ? e.message : "") ? "PERSISTENCE" : "UNKNOWN";
+       const msg = e instanceof GatewayError ? (status === 402 ? "AI credits are exhausted." : status === 429 ? "AI rate limit reached. Please wait and retry." : "AI gateway request failed. Please retry or check System Status.") : `AI run failed (${failureClass}). No usable result was saved; please retry.`;
+       await sb.from("ai_runs").update({ status: "FAILED", error: msg, failure_class: failureClass, completed_at: new Date().toISOString() }).eq("id", run.id);
       return { ok: false as const, error: msg, status, runId: run.id, model: "", outputJson: "null", retrieved: [] as { id: string; name: string; status: string }[] };
     }
   });

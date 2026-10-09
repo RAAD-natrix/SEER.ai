@@ -133,6 +133,7 @@ function PasswordForm() {
 }
 
 function TeamAccess() {
+  const [inviteEmail, setInviteEmail] = useState("");
   const q = useQuery({
     queryKey: ["team-access"],
     queryFn: async () => {
@@ -146,14 +147,22 @@ function TeamAccess() {
     },
   });
   if (!q.data) return null;
+  async function invite() {
+    const email = inviteEmail.trim().toLowerCase();
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { toast.error("Enter a valid analyst email."); return; }
+    const { error } = await supabase.from("team_invitations").upsert({ email, invited_by: await uid(), expires_at: new Date(Date.now() + 7 * 86400000).toISOString(), consumed_at: null }, { onConflict: "email" });
+    if (error) toast.error(error.message); else { toast.success("Email authorised for 7 days. Open sign-up and share the app link; no email was sent."); setInviteEmail(""); }
+  }
   async function toggle() {
     const { error } = await supabase.from("app_config").update({ allow_signup: !q.data!.open }).eq("id", 1);
-    if (error) toast.error(error.message); else { toast.success(!q.data!.open ? "Analyst sign-up is OPEN. Turn it off once they have registered." : "Sign-up closed."); q.refetch(); }
+    if (error) toast.error(error.message); else { toast.success(!q.data!.open ? "Sign-up open for actively invited email addresses only." : "Sign-up closed."); q.refetch(); }
   }
   return (
     <div className="seer-panel space-y-3 p-4">
       <div className="seer-label">Team access</div>
       <p className="text-xs text-muted-foreground">Analysts see and work on every case. Their method library and memory stay their own.</p>
+      <p className="text-xs text-muted-foreground">New accounts require an exact email invitation, valid for 7 days, and open sign-up. Only the owner can approve FINAL deliverables. This is a trusted-team workspace, not isolated client portals.</p>
+      {q.data.isOwner && <div className="flex gap-2"><input type="email" aria-label="Analyst invitation email" placeholder="Analyst email" value={inviteEmail} onChange={(e) => setInviteEmail(e.target.value)} className="w-full rounded border bg-background px-2 text-sm" /><Button size="sm" variant="outline" onClick={invite}>Authorise email</Button></div>}
       <div className="flex items-center gap-3 text-sm">
         Analyst sign-up: <StatusTag s={q.data.open ? "OPEN" : "CLOSED"} />
         {q.data.isOwner && <Button size="sm" variant="outline" onClick={toggle}>{q.data.open ? "Close sign-up" : "Open sign-up"}</Button>}

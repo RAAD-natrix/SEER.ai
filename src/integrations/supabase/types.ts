@@ -19,6 +19,7 @@ export type Database = {
           case_id: string | null
           completed_at: string | null
           error: string | null
+          failure_class: string | null
           frozen_state: Json | null
           id: string
           input_ids: Json | null
@@ -37,6 +38,7 @@ export type Database = {
           case_id?: string | null
           completed_at?: string | null
           error?: string | null
+          failure_class?: string | null
           frozen_state?: Json | null
           id?: string
           input_ids?: Json | null
@@ -55,6 +57,7 @@ export type Database = {
           case_id?: string | null
           completed_at?: string | null
           error?: string | null
+          failure_class?: string | null
           frozen_state?: Json | null
           id?: string
           input_ids?: Json | null
@@ -1262,6 +1265,33 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      team_invitations: {
+        Row: {
+          consumed_at: string | null
+          created_at: string
+          email: string
+          expires_at: string
+          id: string
+          invited_by: string
+        }
+        Insert: {
+          consumed_at?: string | null
+          created_at?: string
+          email: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+        }
+        Update: {
+          consumed_at?: string | null
+          created_at?: string
+          email?: string
+          expires_at?: string
+          id?: string
+          invited_by?: string
+        }
+        Relationships: []
       }
       thought_paths: {
         Row: {

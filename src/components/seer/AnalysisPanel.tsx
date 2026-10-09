@@ -26,9 +26,10 @@ export function AnalysisPanel({ caseId, activePathId }: { caseId: string; active
     if (!activePathId) { toast.error("Select a thought path first."); return; }
     const r = await run({ stage: "DIAGNOSIS", caseId, pathId: activePathId });
     if (!r) return;
-    const { data: p } = await supabase.from("thought_paths").select("detail").eq("id", activePathId).single();
-    const { error } = await supabase.from("thought_paths").update({ detail: { ...((p?.detail ?? {}) as Record<string, unknown>), diagnosis: r.output } as never }).eq("id", activePathId);
-    if (error) toast.error(error.message); else toast.success("Diagnosis saved to the active path.");
+    const { data: p, error: readError } = await supabase.from("thought_paths").select("detail,updated_at").eq("id", activePathId).single();
+    if (readError || !p) { toast.error("Could not load the current path. Diagnosis remains in the AI run history."); return; }
+    const { data: saved, error } = await supabase.from("thought_paths").update({ detail: { ...((p.detail ?? {}) as Record<string, unknown>), diagnosis: r.output } as never }).eq("id", activePathId).eq("updated_at", p.updated_at).select("id");
+    if (error) toast.error(error.message); else if (!saved?.length) toast.error("The path changed while saving. Retry; diagnosis remains in the AI run history."); else toast.success("Diagnosis saved to the active path.");
     done();
   }
   async function options() {

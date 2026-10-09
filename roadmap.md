@@ -1,8 +1,10 @@
 # SEER.ai roadmap
-- [ ] Brand Word/PDF exports with Base Pairing logo, document identity and recurring footer; verify real files
-- [ ] Audit private-workbench publish readiness and fix priority integrity, security and operational defects
-- [ ] Embed bounded interdisciplinary strategy, PDCA/DMAIC and owned experiments in reasoning and outcomes
-- [ ] Run a separate full-stage audit case and document evidence, remaining risks and publish recommendation
+- [x] Brand Word/PDF exports with Base Pairing logo, document identity and recurring footer; verify real files
+- [x] Audit private-workbench publish readiness and apply first priority integrity, security and operational fixes
+- [x] Embed bounded interdisciplinary strategy, PDCA/DMAIC and owned experiments in reasoning and outcomes
+- [x] Run separate full-stage synthetic audit case (932d6472-4db3-4de5-bd16-9f7e731be842); 11/11 stages completed; audit QA passed; both formats 2 pages
+- [ ] Publish gate: server-owned review provenance and atomic version/review/approval transactions; independent collaborator-negative tests
+- [ ] Publish gate: production signup/password settings verification, restoration rehearsal and GitHub first green Actions run
 - [x] Incorporate Navin's gold DNA brand, Base Pairing identity and verify the workbench appearance
 - [x] Auth, schema, RLS, private storage, method starters
 - [x] THINK with contamination firewall

@@ -1,0 +1,2 @@
+ALTER TABLE public.ai_runs ADD COLUMN failure_class text;
+COMMENT ON COLUMN public.ai_runs.failure_class IS 'Safe operational category: NETWORK, SCHEMA, GATEWAY, RATE_LIMIT, PERSISTENCE or UNKNOWN; no credentials or raw gateway bodies.';

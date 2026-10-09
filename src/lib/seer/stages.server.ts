@@ -115,21 +115,21 @@ export const STAGES = {
       hypotheses: z.array(z.object({ hypothesis: str, supporting: S, contradicting: S })),
       strongest_diagnosis: str, strongest_competitor: str, protect: S, unknowns: S, falsifiers: S, reframe: str,
     }),
-    task: "Run the diagnostic method: preserve the stated problem; separate symptom, cause, consequence and constraint; generate no more than three serious hypotheses; test supporting and contradicting evidence; identify the strongest diagnosis and retain the strongest competitor; state what to protect, material unknowns, falsifiers and one concise reframe. Do not recommend action.",
+    task: "Run the diagnostic method: preserve the stated problem; separate symptom, cause, consequence and constraint; generate no more than three serious hypotheses; test supporting and contradicting evidence; identify the strongest diagnosis and retain the strongest competitor; state what to protect, material unknowns, falsifiers and one concise reframe. Do not recommend action. Where relevant use behavioural science, consumer marketing and game theory to examine jobs, friction, incentives and actor responses as hypotheses, not assumed facts. Consider an overlooked structural gap and one cross-sector mechanism, recording transfer conditions, analogy limits and a falsifier rather than celebrating novelty.",
   },
   OPTIONS_ANALYSIS: {
     schema: z.object({
       options: z.array(z.object({ label: str, description: str, assumptions: str, switching_conditions: str, hard_constraint_fail: z.boolean() })),
       note: str,
     }),
-    task: "Where a real decision exists, propose options: OPTION 0 maintain current course, OPTION 1 limited correction, OPTION 2 structural intervention, OPTION 3 only if another credible route genuinely exists. No false binaries. Do not score them; the owner scores.",
+    task: "Where a real decision exists, propose options: OPTION 0 maintain current course, OPTION 1 limited correction, OPTION 2 structural intervention, OPTION 3 only if another credible route genuinely exists. No false binaries. Do not score them; the owner scores. Use game theory to test incentive compatibility, best responses and credible commitments. A cross-sector option must name its originating mechanism, prerequisites, analogy limits and smallest disconfirming test. Practical implementation uses Kaizen PDCA, Agile reversible increments and Six Sigma DMAIC: baseline or explicit gap, owner, comparison, time horizon, success/failure thresholds and stop/revise/scale conditions. Proposed thresholds are proposals, not observed facts.",
   },
   RISK_STAKEHOLDER: {
     schema: z.object({
       risks: z.array(z.object({ risk: str, likelihood: str, consequence: str, control: str, risk_owner: str, trigger_condition: str, severity: z.enum(["FATAL","MATERIAL","OPTIONAL"]) })),
       stakeholders: z.array(z.object({ name: str, influence: str, alignment: str, gain: str, loss: str, likely_response: str, resistance: str, info_gap: str, required_response: str })),
     }),
-    task: "Identify material risks and stakeholder positions from the case record. Name stakeholders by role, not invented individuals. Leave risk_owner empty if unknown.",
+    task: "Identify material risks and stakeholder positions from the case record. Name stakeholders by role, not invented individuals. Leave risk_owner empty if unknown. Apply game theory to second-order actor responses; actuarial reasoning to frequency versus severity, correlated risks and tail exposures without invented probabilities. Ethical military-strategy analogy may test logistics, dependencies, reserves and adaptation, never violence, coercion or treating consumers as enemies. Controls should have triggers and accountable owners; missing data remains NOT ASSESSED.",
   },
   OUTPUT_SELECT: {
     schema: z.object({ recommended_keys: S, rationale: str }),
@@ -137,7 +137,7 @@ export const STAGES = {
   },
   OUTPUT_DRAFT: {
     schema: z.object({ markdown: str, not_assessed: S }),
-    task: "Draft the selected deliverable in Markdown following the template structure exactly. Use only facts in the case record. Where data is missing, write NOT ASSESSED and list it. Never invent figures. Label status as DRAFT — NOT OWNER APPROVED.",
+    task: "Draft the selected deliverable in Markdown following the template structure exactly. Use only facts in the case record. Where data is missing, write NOT ASSESSED and list it. Never invent figures. Label status as DRAFT — NOT OWNER APPROVED. Exports support headings, paragraphs and bullet lists: do not use tables, HTML or fenced code. Respect the template depth; for a 1–2 page Strategic Clarity Record aim for at most 650 words, without dropping sections, evidence boundaries or consequential caveats. The page limit must still be verified on rendered Word and PDF, never claimed from word count alone.",
   },
   OUTPUT_REDTEAM: { schema: redteam, task: "RED TEAM this deliverable as a sceptical CEO, board director, CMO, CFO, operating leader and affected stakeholder. Do not hide fatal or material findings." },
   OUTPUT_QA: {
@@ -153,7 +153,7 @@ export const STAGES = {
   },
   OUTCOME_REVIEW: {
     schema: z.object({ learning_summary: str, method_implications: S, calibration_notes: S }),
-    task: "Compare the registered forecast with the recorded outcome. Note attribution limits. State what this may strengthen, weaken or contradict about methods used. One outcome does not create a universal rule.",
+    task: "Compare the registered forecast with the recorded outcome. Note attribution limits. State what this may strengthen, weaken or contradict about methods used. One outcome does not create a universal rule. Complete the Kaizen PDCA learning cycle: separate execution fidelity, external change and causal attribution from strategic validity; compare baseline and agreed thresholds; recommend stop, revise or scale with an owner and next review. Do not claim statistical significance or Six Sigma capability without suitable data.",
   },
   SYSTEM_DIAGNOSIS: {
     schema: z.object({ reachable: z.boolean(), note: str }),
