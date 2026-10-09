@@ -1386,6 +1386,15 @@ export type Database = {
         Returns: boolean
       }
       is_team_member: { Args: { _uid: string }; Returns: boolean }
+      save_output_version: {
+        Args: {
+          _content: string
+          _expected_version: number
+          _output_id: string
+          _reason: string
+        }
+        Returns: number
+      }
       seed_method_starters: { Args: { _uid: string }; Returns: undefined }
     }
     Enums: {
