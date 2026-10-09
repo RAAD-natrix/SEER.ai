@@ -18,7 +18,12 @@ const FOOTER = `${brand.footer} · All rights reserved`;
 export function deliverableMarkdown(o: { content: string; status: string; version: number; approved_at: string | null }) {
   const status = `**Status:** ${o.status}${o.approved_at ? ` · Approved ${new Date(o.approved_at).toISOString().slice(0, 10)}` : ""} · Version ${o.version}`;
   return /^\*\*Status:\*\*.*$/im.test(o.content)
-    ? o.content.replace(/^\*\*Status:\*\*.*$/im, (line) => status + (line.includes(" — ") ? " — " + line.split(" — ").slice(1).join(" — ") : ""))
+    ? o.content.replace(/^\*\*Status:\*\*.*$/im, (line) => {
+      const parts = line.split(" — ").slice(1);
+      if (/^(NOT OWNER APPROVED|OWNER APPROVED)([. ]|$)/i.test(parts[0] ?? "")) parts[0] = parts[0].replace(/^(NOT OWNER APPROVED|OWNER APPROVED)\.?\s*/i, "");
+      const caveat = parts.join(" — ").trim();
+      return status + (caveat ? " — " + caveat : "");
+    })
     : `${status}\n\n${o.content}`;
 }
 
