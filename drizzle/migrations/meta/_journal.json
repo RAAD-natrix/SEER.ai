@@ -71,6 +71,13 @@
       "when": 1791532954162,
       "tag": "0009_governed_learning_lifecycle",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1791532994850,
+      "tag": "0010_learning_review_flag_fix",
+      "breakpoints": true
     }
   ]
 }
