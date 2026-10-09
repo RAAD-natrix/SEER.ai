@@ -1167,6 +1167,7 @@ export type Database = {
           mime: string | null
           owner_id: string
           path_ids: string[]
+          processing_consent: string
           reliability_notes: string | null
           review: Json | null
           routing: string | null
@@ -1195,6 +1196,7 @@ export type Database = {
           mime?: string | null
           owner_id?: string
           path_ids?: string[]
+          processing_consent?: string
           reliability_notes?: string | null
           review?: Json | null
           routing?: string | null
@@ -1223,6 +1225,7 @@ export type Database = {
           mime?: string | null
           owner_id?: string
           path_ids?: string[]
+          processing_consent?: string
           reliability_notes?: string | null
           review?: Json | null
           routing?: string | null

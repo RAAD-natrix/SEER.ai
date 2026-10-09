@@ -243,7 +243,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
                       <div className="mt-2 flex flex-wrap gap-1">
                         {ACTIONS.map((a) => {
                           const done = Array.isArray(m.actions) && m.actions.some((x) => (x as Record<string, unknown>)?.["action"] === a);
-                          return <button key={a} onClick={() => act(m, a)} disabled={!!busy} className={`rounded border px-1.5 py-0.5 font-mono text-[10px] ${done ? "border-primary text-primary" : "text-muted-foreground hover:text-foreground"}`}>{a}</button>;
+                          return <button key={a} onClick={() => act(m, a)} disabled={!!busy} className={`rounded border px-1.5 py-0.5 font-mono text-xs ${done ? "border-primary text-primary" : "text-muted-foreground hover:text-foreground"}`}>{a}</button>;
                         })}
                       </div>
                     </>
@@ -254,7 +254,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
             </div>
             <div className="seer-panel sticky bottom-2 space-y-2 p-3">
               <div className="flex flex-wrap gap-1">
-                {KINDS.map((k) => <button key={k} onClick={() => setKind(k)} className={`rounded border px-1.5 py-0.5 font-mono text-[10px] ${kind === k ? "border-primary text-primary" : "text-muted-foreground"}`}>{k}</button>)}
+                {KINDS.map((k) => <button key={k} onClick={() => setKind(k)} className={`rounded border px-1.5 py-0.5 font-mono text-xs ${kind === k ? "border-primary text-primary" : "text-muted-foreground"}`}>{k}</button>)}
               </div>
               <Textarea rows={3} aria-label="Message" value={msg} onChange={(e) => setMsg(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && (e.metaKey || e.ctrlKey)) send(); }} placeholder="Think out loud. Ctrl/⌘+Enter to send." />
               <Button size="sm" onClick={send} disabled={!msg.trim() || !!busy}>Send</Button>

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { ACCEPT } from "@/lib/seer/extract";
 import { uploadSource } from "@/lib/seer/sources";
+import { ConsentChoice, type Consent } from "@/components/seer/ConsentChoice";
 import { audit, uid, useStage } from "@/lib/seer/client";
 import type { Tables } from "@/integrations/supabase/types";
 
@@ -26,6 +27,7 @@ function OpenMind() {
   const [title, setTitle] = useState("");
   const [url, setUrl] = useState("");
   const [kind, setKind] = useState("OWNER THOUGHT");
+  const [consent, setConsent] = useState<Consent>("LOCAL_ONLY");
   const [file, setFile] = useState<File | null>(null);
   const [parent, setParent] = useState<Tables<"openmind_items"> | null>(null);
   const [filter, setFilter] = useState("");
@@ -37,18 +39,20 @@ function OpenMind() {
     if (!text.trim() && !file) return;
     const owner = await uid();
     let sourceId: string | null = null;
+    let aiSource = false;
     let content = text;
     if (file) {
       try {
-        const { source } = await uploadSource(file, { area: "openmind", title: title || file.name });
+        const { source } = await uploadSource(file, { area: "openmind", title: title || file.name, consent });
         sourceId = source.id;
+        aiSource = source.processing_consent === "ALLOWED_AI";
         content = text || `File: ${source.title} (${source.status})`;
       } catch (e) { toast.error(e instanceof Error ? e.message : "Upload failed"); return; }
     }
     const { data: item } = await supabase.from("openmind_items").insert({ owner_id: owner, kind: file ? "EXTERNAL FACT OR SOURCE" : kind, title: title || null, content, url: url || null, source_id: sourceId, parent_id: parent?.id ?? null }).select("id").single();
     setText(""); setTitle(""); setUrl(""); setFile(null);
     if (explore && item) {
-      const r = await run({ stage: "OPEN_MIND_STUDY", ...(sourceId ? { sourceId } : {}), text: `${parent ? `Branching from: ${parent.content}\n\n` : ""}${content}` });
+      const r = await run({ stage: "OPEN_MIND_STUDY", ...(sourceId && aiSource ? { sourceId } : {}), text: `${parent ? `Branching from: ${parent.content}\n\n` : ""}${content}` });
       if (r) {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const o = r.output as any;
@@ -111,12 +115,13 @@ function OpenMind() {
       <div className="grid gap-6 lg:grid-cols-[400px_1fr]">
         <div className="space-y-3">
           <div className="seer-panel space-y-2 p-4">
-            {parent && <div className="rounded border border-primary p-2 text-xs">Branching from: {parent.content.slice(0, 120)} <button className="ml-2 underline" onClick={() => setParent(null)}>cancel</button></div>}
+            {parent && <div className="rounded border border-primary p-2 text-xs">Branching from: {parent.content.slice(0, 120)} <button className="ml-2 min-h-11 px-2 underline" onClick={() => setParent(null)}>cancel</button></div>}
             <Input placeholder="Title (optional)" value={title} onChange={(e) => setTitle(e.target.value)} />
             <Textarea rows={6} placeholder="An idea, observation, provocation or excerpt…" value={text} onChange={(e) => setText(e.target.value)} />
             <Input placeholder="URL / reference (optional)" value={url} onChange={(e) => setUrl(e.target.value)} />
             <Input type="file" accept={ACCEPT} aria-label="File" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
-            <select aria-label="Kind" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={kind} onChange={(e) => setKind(e.target.value)}>{KINDS.map((k) => <option key={k}>{k}</option>)}</select>
+            {file && <ConsentChoice name="openmind-consent" value={consent} onChange={setConsent} />}
+            <select aria-label="Kind" className="min-h-11 w-full rounded-md border bg-background px-2 text-sm" value={kind} onChange={(e) => setKind(e.target.value)}>{KINDS.map((k) => <option key={k}>{k}</option>)}</select>
             <div className="flex gap-2"><Button onClick={() => add(true)} disabled={!!busy}>{busy ? "Exploring…" : "Save & explore with SEER"}</Button><Button variant="outline" onClick={() => add(false)}>Save only</Button></div>
             <p className="text-xs text-muted-foreground">External research is not a personal method. Items stay out of cases unless marked reusable or moved.</p>
           </div>
@@ -124,8 +129,8 @@ function OpenMind() {
         </div>
         <div>
           <div className="mb-2 flex flex-wrap gap-1">
-            <button onClick={() => setFilter("")} className={`rounded border px-2 py-0.5 font-mono text-[10px] ${!filter ? "border-primary text-primary" : "text-muted-foreground"}`}>ALL</button>
-            {KINDS.map((k) => <button key={k} onClick={() => setFilter(k)} className={`rounded border px-2 py-0.5 font-mono text-[10px] ${filter === k ? "border-primary text-primary" : "text-muted-foreground"}`}>{k}</button>)}
+            <button onClick={() => setFilter("")} className={`rounded border px-2 py-0.5 font-mono text-xs ${!filter ? "border-primary text-primary" : "text-muted-foreground"}`}>ALL</button>
+            {KINDS.map((k) => <button key={k} onClick={() => setFilter(k)} className={`rounded border px-2 py-0.5 font-mono text-xs ${filter === k ? "border-primary text-primary" : "text-muted-foreground"}`}>{k}</button>)}
           </div>
           <div className="seer-panel p-3">{roots.length ? roots.map((i) => <Item key={i.id} i={i} depth={0} />) : <p className="text-sm text-muted-foreground">Nothing here yet.</p>}</div>
         </div>

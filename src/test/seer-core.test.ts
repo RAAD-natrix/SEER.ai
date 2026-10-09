@@ -46,6 +46,10 @@ describe("bounded interdisciplinary strategy", () => {
 describe("readiness index", () => {
   it("totals 100 at full completeness", () => {
     expect(computeReadiness(base).index).toBe(100);
+    expect(computeReadiness(base).verdict).toBe("Owner approved");
+    expect(computeReadiness({ ...base, ownerApproved: false }).verdict).toBe("Ready for human review");
+    expect(computeReadiness({ ...base, hasQuestion: false, ownerApproved: false }).verdict).toBe("Draft");
+    expect(computeReadiness({ ...base, hasQuestion: false }).checks.find((c) => c.key === "brief")?.state).toBe("PARTLY MET");
   });
   it("applies blocker caps", () => {
     expect(computeReadiness({ ...base, hasQuestion: false }).index).toBeLessThanOrEqual(35);

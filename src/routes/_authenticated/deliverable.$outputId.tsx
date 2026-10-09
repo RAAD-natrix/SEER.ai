@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { ReadinessWords, readinessVerdict } from "@/components/seer/ReadinessWords";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -71,7 +72,7 @@ function DeliverablePage() {
       <Link to="/work/$caseId" params={{ caseId: o.case_id }} className="seer-label hover:text-primary">← Back to case</Link>
       <WorkbenchIdentity area="FINAL DELIVERABLE" title={o.title} />
       <div className="seer-panel mb-4 flex flex-wrap items-center gap-2 p-3">
-        <StatusTag s={materialOpen ? "READY SUBJECT TO CORRECTIONS" : o.status} /><span className="seer-label">v{o.version}{rd?.index !== undefined ? ` · readiness ${rd.index}` : ""}</span>
+        <StatusTag s={materialOpen ? "READY SUBJECT TO CORRECTIONS" : o.status} /><span className="seer-label">v{o.version}{rd ? ` · ${readinessVerdict(rd).toLowerCase()}` : ""}</span>
         <span className="mr-auto" />
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_REDTEAM", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { redteam: r.output as never }); }}>{busy === "OUTPUT_REDTEAM" ? "Running…" : "Run Red Team"}</Button>
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_QA", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { qa: r.output as never }); }}>{busy === "OUTPUT_QA" ? "Running…" : "Run QA"}</Button>
@@ -80,14 +81,14 @@ function DeliverablePage() {
         <Button size="sm" variant="ghost" disabled={dirty} onClick={async () => { try { await exportPdf(o.title, deliverableMarkdown(o)); await audit("EXPORT", "output", o.id, { format: "pdf" }); } catch (e) { toast.error(e instanceof Error ? e.message : "Download failed"); } }}>PDF</Button>
       </div>
       {materialOpen && <p role="alert" className="mb-3 text-sm text-warning">Unresolved material Red Team findings. Revise the record and run Red Team and QA again before approval.</p>}
-      {rd?.blockers?.length > 0 && <div className="seer-panel mb-4 p-3 text-xs"><div className="seer-label text-destructive">Blockers</div><ul className="list-disc pl-5">{rd.blockers.map((b: { label: string }) => <li key={b.label}>{b.label}</li>)}</ul></div>}
+      {rd && <div className="seer-panel mb-4 p-3"><ReadinessWords rd={rd} compact /></div>}
       <div className="grid gap-4 lg:grid-cols-2">
-        <div className="space-y-2">
+        <div className="no-print space-y-2">
           <div className="seer-label">Edit</div>
           <Textarea aria-label="Deliverable text" rows={30} value={text} onChange={(e) => setText(e.target.value)} className="font-mono text-xs" />
           <div className="flex gap-2"><Input placeholder="Reason for edit" value={reason} onChange={(e) => setReason(e.target.value)} /><Button disabled={!dirty} onClick={save}>Save version</Button>{dirty && <Button variant="ghost" onClick={() => setText(o.content)}>Discard</Button>}</div>
         </div>
-        <div className="space-y-2"><div className="seer-label">Preview</div><div className="seer-panel seer-prose max-h-[75vh] overflow-y-auto p-5 text-sm"><ReactMarkdown>{dirty ? text : deliverableMarkdown(o)}</ReactMarkdown></div></div>
+        <div className="space-y-2"><div className="no-print seer-label">Preview</div><div className="seer-panel seer-prose max-h-[75vh] overflow-y-auto p-5 text-sm"><ReactMarkdown>{dirty ? text : deliverableMarkdown(o)}</ReactMarkdown></div></div>
       </div>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         {o.redteam && <div className="seer-panel space-y-2 p-4"><div className="seer-label">Red Team</div><RedTeamView r={o.redteam} /></div>}

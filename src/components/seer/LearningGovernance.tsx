@@ -67,7 +67,7 @@ export function LearningGovernance({ rule, onChange }: { rule: Rule; onChange: (
   return (
     <div className="mt-3 space-y-2 border-t border-primary/30 pt-3">
       <div className="seer-label text-primary">Governed learning · version {rule.version}</div>
-      <div className="flex flex-wrap gap-1.5">{steps.map(([l, ok]) => <span key={l} className={`rounded border px-1.5 py-0.5 font-mono text-[10px] ${ok ? "border-primary text-primary" : "text-muted-foreground"}`}>{ok ? "✓ " : ""}{l}</span>)}</div>
+      <div className="flex flex-wrap gap-1.5">{steps.map(([l, ok]) => <span key={l} className={`rounded border px-1.5 py-0.5 font-mono text-xs ${ok ? "border-primary text-primary" : "text-muted-foreground"}`}>{ok ? "✓ " : ""}{l}</span>)}</div>
       {g.blocked && <p className="rounded border border-destructive p-2 text-sm text-destructive">Withdrawn: a recorded outcome contradicts this method. Record a resolution, then challenge and validate again before any reuse.</p>}
       {rule.status === "STARTER" && <p className="text-xs text-muted-foreground">Built-in generic starter. It is reusable until contradicted; edits still create new versions.</p>}
       <Textarea rows={2} placeholder="Review note: the challenge, validation reasoning, transfer judgement or resolution" value={notes} onChange={(e) => setNotes(e.target.value)} />

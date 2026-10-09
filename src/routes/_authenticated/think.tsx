@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ACCEPT } from "@/lib/seer/extract";
 import { deleteSource, uploadSource } from "@/lib/seer/sources";
+import { ConsentChoice, consentLabel, type Consent } from "@/components/seer/ConsentChoice";
 import { audit, uid, useStage } from "@/lib/seer/client";
 
 export const Route = createFileRoute("/_authenticated/think")({
@@ -32,12 +33,13 @@ function Think() {
   const [cls, setCls] = useState(CLASSES[0]);
   const [title, setTitle] = useState("");
   const [uploading, setUploading] = useState(false);
+  const [consent, setConsent] = useState<Consent>("LOCAL_ONLY");
   const [selected, setSelected] = useState<string | null>(null);
   const { run, busy } = useStage();
 
   const sources = useQuery({
     queryKey: ["think-sources"],
-    queryFn: async () => (await supabase.from("sources").select("id,title,filename,classification,status,coverage,warnings,review,created_at,size_bytes").eq("area", "think").is("deleted_at", null).order("created_at", { ascending: false })).data ?? [],
+    queryFn: async () => (await supabase.from("sources").select("id,title,filename,classification,status,coverage,warnings,review,created_at,size_bytes,processing_consent").eq("area", "think").is("deleted_at", null).order("created_at", { ascending: false })).data ?? [],
   });
   const methods = useQuery({
     queryKey: ["think-methods", selected],
@@ -52,7 +54,7 @@ function Think() {
     if (!file) return;
     setUploading(true);
     try {
-      const { source, duplicates } = await uploadSource(file, { area: "think", classification: cls ?? "OTHER", title: title || file.name });
+      const { source, duplicates } = await uploadSource(file, { area: "think", classification: cls ?? "OTHER", title: title || file.name, consent });
       if (duplicates.length) toast.warning(`Identical file already uploaded: ${duplicates.map((d) => d.title).join(", ")}`);
       toast.success(`Uploaded — ${source.status}`);
       setFile(null); setTitle("");
@@ -105,17 +107,18 @@ function Think() {
             <div className="space-y-1"><Label htmlFor="tt">Title</Label><Input id="tt" value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Optional" /></div>
             <div className="space-y-1">
               <Label htmlFor="tc">Classification</Label>
-              <select id="tc" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={cls} onChange={(e) => setCls(e.target.value)}>
+              <select id="tc" className="min-h-11 w-full rounded-md border bg-background px-2 text-sm" value={cls} onChange={(e) => setCls(e.target.value)}>
                 {CLASSES.map((c) => <option key={c}>{c}</option>)}
               </select>
             </div>
+            <ConsentChoice name="think-consent" value={consent} onChange={setConsent} />
             <Button onClick={upload} disabled={!file || uploading} className="w-full">{uploading ? "Uploading & extracting…" : "Upload"}</Button>
           </div>
           <div className="seer-panel divide-y">
             {sources.data?.length ? sources.data.map((s) => (
               <button key={s.id} onClick={() => setSelected(s.id)} className={`block w-full px-3 py-2.5 text-left hover:bg-secondary ${selected === s.id ? "bg-secondary" : ""}`}>
                 <div className="truncate text-sm">{s.title}</div>
-                <div className="mt-1 flex flex-wrap items-center gap-1.5"><StatusTag s={s.status} /><span className="seer-label">{(s.coverage as { coverage_percent?: number })?.coverage_percent ?? 0}% coverage</span></div>
+                <div className="mt-1 flex flex-wrap items-center gap-1.5"><StatusTag s={s.status} /><span className="seer-label">{(s.coverage as { coverage_percent?: number })?.coverage_percent ?? 0}% coverage · {consentLabel(s.processing_consent)}</span></div>
               </button>
             )) : <p className="p-3 text-sm text-muted-foreground">No sources yet.</p>}
           </div>

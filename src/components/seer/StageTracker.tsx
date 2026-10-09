@@ -38,7 +38,7 @@ export function StageTracker({ caseId, onGo }: { caseId: string; onGo: (s: Tab) 
         <div className="seer-label">AI stage progress</div>
         <div className="font-mono text-xs text-muted-foreground">{done}/{rows.length} · {pct}%</div>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded bg-muted" role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
+      <div className="h-2 w-full overflow-hidden rounded bg-muted" role="progressbar" aria-label="AI stage progress" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
         <div className="h-full bg-primary transition-all" style={{ width: `${pct}%` }} />
       </div>
       <div className="grid gap-3 md:grid-cols-2">

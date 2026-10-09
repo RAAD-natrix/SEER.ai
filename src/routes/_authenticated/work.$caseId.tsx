@@ -175,7 +175,7 @@ function BriefStage({ caseId, onSaved }: { caseId: string; onSaved: () => void }
           <p className="text-sm text-muted-foreground">{busy ? "SEER is reading the brief…" : "No initial analysis for this version yet."}</p>
         ) : (
           <div className="seer-panel space-y-4 p-4">
-            <div className="flex items-center justify-between"><div className="seer-label">Brief triage · v{shown?.version}</div><span className="font-mono text-[10px] text-muted-foreground">{t._model}</span></div>
+            <div className="flex items-center justify-between"><div className="seer-label">Brief triage · v{shown?.version}</div><span className="font-mono text-xs text-muted-foreground">{t._model}</span></div>
             <Block label="Brief as written"><p className="text-sm">{t.brief_as_written}</p></Block>
             <Block label="Apparent decision"><p className="text-sm">{t.apparent_decision}</p></Block>
             <Block label="Mandatory requirements"><Bullets items={t.mandatory_requirements} /></Block>

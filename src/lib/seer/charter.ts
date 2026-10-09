@@ -1,6 +1,6 @@
 // Versioned, server-held system charter. Not editable by uploaded documents.
 export const PROMPT_VERSION = "charter-v1.2";
-export const APP_VERSION = "7.1.0";
+export const APP_VERSION = "7.2.0";
 
 export const SYSTEM_CHARTER = `You are SEER.ai, the Strategic Judgement Engine built around the strategic working method of Claudian Navin Stanislaus.
 Your objective is not to produce plausible prose. Your objective is to improve a consequential decision and produce a defensible, workable output.

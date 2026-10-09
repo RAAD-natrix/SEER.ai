@@ -2,7 +2,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { audit, uid } from "./client";
 import { extractFile, sanitiseFilename, sha256, validateFile } from "./extract";
 
-export async function uploadSource(f: File, opts: { area: "think" | "research" | "openmind"; caseId?: string | null; classification?: string; sourceType?: string; title?: string; sourceDate?: string; routing?: string; pathIds?: string[] }) {
+export async function uploadSource(f: File, opts: { area: "think" | "research" | "openmind"; caseId?: string | null; classification?: string; sourceType?: string; title?: string; sourceDate?: string; routing?: string; pathIds?: string[]; consent?: "LOCAL_ONLY" | "ALLOWED_AI" }) {
   const owner = await uid();
   const { data: prof } = await supabase.from("profiles").select("settings").eq("id", owner).single();
   const maxMb = Number((prof?.settings as Record<string, unknown> | null)?.["max_upload_mb"] ?? 20);
@@ -35,6 +35,7 @@ export async function uploadSource(f: File, opts: { area: "think" | "research" |
       source_date: opts.sourceDate ?? null,
       routing: opts.routing ?? null,
       path_ids: opts.pathIds ?? [],
+      processing_consent: opts.consent ?? "LOCAL_ONLY",
     })
     .select("*")
     .single();
@@ -44,13 +45,13 @@ export async function uploadSource(f: File, opts: { area: "think" | "research" |
   return { source: data, duplicates: dups ?? [] };
 }
 
-export async function createTextSource(text: string, opts: { area: "think" | "research" | "openmind"; caseId?: string | null; title: string; classification?: string; routing?: string; pathIds?: string[] }) {
+export async function createTextSource(text: string, opts: { area: "think" | "research" | "openmind"; caseId?: string | null; title: string; classification?: string; routing?: string; pathIds?: string[]; consent?: "LOCAL_ONLY" | "ALLOWED_AI" }) {
   const owner = await uid();
   const enc = new TextEncoder().encode(text);
   const hash = await sha256(enc.buffer as ArrayBuffer);
   const { data, error } = await supabase
     .from("sources")
-    .insert({ owner_id: owner, area: opts.area, case_id: opts.caseId ?? null, title: opts.title, source_type: "TEXT", classification: opts.classification ?? null, status: "EXTRACTED", coverage: { total_units: 1, extracted_units: 1, visual_review_required: 0, failed_units: 0, coverage_percent: 100, unit: "text" } as never, file_hash: hash, size_bytes: enc.length, extracted_text: text, routing: opts.routing ?? null, path_ids: opts.pathIds ?? [] })
+    .insert({ owner_id: owner, area: opts.area, case_id: opts.caseId ?? null, title: opts.title, source_type: "TEXT", classification: opts.classification ?? null, status: "EXTRACTED", coverage: { total_units: 1, extracted_units: 1, visual_review_required: 0, failed_units: 0, coverage_percent: 100, unit: "text" } as never, file_hash: hash, size_bytes: enc.length, extracted_text: text, routing: opts.routing ?? null, path_ids: opts.pathIds ?? [], processing_consent: opts.consent ?? "LOCAL_ONLY" })
     .select("*")
     .single();
   if (error) throw new Error(error.message);
@@ -70,4 +71,9 @@ export async function deleteSource(id: string) {
 export async function signedUrl(path: string) {
   const { data } = await supabase.storage.from("sources").createSignedUrl(path, 60);
   return data?.signedUrl;
+}
+
+export async function setSourceConsent(id: string, consent: "LOCAL_ONLY" | "ALLOWED_AI") {
+  const { error } = await supabase.from("sources").update({ processing_consent: consent }).eq("id", id);
+  if (error) throw new Error(error.message);
 }

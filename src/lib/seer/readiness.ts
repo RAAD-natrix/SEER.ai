@@ -29,8 +29,13 @@ export type ReadinessInput = {
   ownerApproved: boolean;
 };
 
+export type CheckState = "MET" | "PARTLY MET" | "NOT MET";
+export type ReadinessCheck = { key: string; label: string; state: CheckState };
 export type Readiness = {
+  /** Internal ordering aid only — never displayed (v7.2: readiness is expressed in words). */
   index: number;
+  verdict: "Draft" | "Ready for human review" | "Owner approved";
+  checks: ReadinessCheck[];
   raw: number;
   components: { key: string; label: string; weight: number; score: number }[];
   blockers: { label: string; cap: number }[];
@@ -65,5 +70,8 @@ export function computeReadiness(i: ReadinessInput): Readiness {
   if (i.closedPaths === 0) blockers.push({ label: "No closed/selected thought path", cap: 80 });
   const cap = blockers.reduce((m, b) => Math.min(m, b.cap), 100);
   const index = Math.min(raw, cap);
-  return { index, raw, components, blockers, canBeFinal: i.ownerApproved && blockers.length === 0 };
+  const checks: ReadinessCheck[] = comps.map((c) => ({ key: c.key, label: c.label, state: c.f >= 0.999 ? "MET" : c.f > 0 ? "PARTLY MET" : "NOT MET" }));
+  const canBeFinal = i.ownerApproved && blockers.length === 0;
+  const verdict = canBeFinal ? "Owner approved" : blockers.length === 0 ? "Ready for human review" : "Draft";
+  return { index, verdict, checks, raw, components, blockers, canBeFinal };
 }

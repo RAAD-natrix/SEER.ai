@@ -17,3 +17,6 @@
 - Save deliverable edits through the locking version RPC so content, history, review invalidation and audit remain one transaction.
 - Recompute approval blockers from saved case records in the database trigger; reject unresolved material findings rather than trusting browser readiness or informal waivers.
 - Govern reusable learning in the database (method_rules trigger + insert-only learning_reviews): activation needs a current-version challenge and bounded validation, cross-project use needs a transfer review and only the frozen six-field payload is retrieved, edits invalidate reviews, and a recorded contradiction withdraws the method — so browser code cannot promote unreviewed learning.
+- Express readiness to users as a verdict plus named checks and blockers (`ReadinessWords`); the numeric index is an internal ordering aid only, because a score implies false precision.
+- Record a per-source privacy choice (`sources.processing_consent`, local-only by default) and refuse local-only sources inside the AI server handler, so the browser cannot leak a file the owner kept local.
+- Keep the readability floor in theme tokens and shared controls (13px secondary, 15px body, 44px targets, A4 print rules in `styles.css`) rather than per-component overrides.

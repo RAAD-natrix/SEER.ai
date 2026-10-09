@@ -39,7 +39,7 @@ export function OutcomeMethodFeedback({ caseId, outcomeId }: { caseId: string; o
           <div key={m.id} className="space-y-1">
             <div className="text-xs"><span className="font-medium">{m.name}</span> <span className="font-mono text-muted-foreground">{m.status} v{m.version}</span>{done.length ? <span className="ml-1 text-primary">· {done.join(", ")}</span> : null}</div>
             <div className="flex gap-1">
-              <Input className="h-8 text-xs" placeholder="Why (execution, context change and attribution considered)" value={reason[m.id] ?? ""} onChange={(e) => setReason({ ...reason, [m.id]: e.target.value })} />
+              <Input className="min-h-11 text-sm" placeholder="Why (execution, context change and attribution considered)" value={reason[m.id] ?? ""} onChange={(e) => setReason({ ...reason, [m.id]: e.target.value })} />
               <Button size="sm" variant="outline" onClick={() => judge(m.id, "SUPPORT")}>Supports</Button>
               <Button size="sm" variant="destructive" onClick={() => judge(m.id, "CONTRADICTION")}>Contradicts</Button>
             </div>

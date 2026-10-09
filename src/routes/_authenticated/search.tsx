@@ -74,7 +74,7 @@ function Search() {
         <div className="space-y-1"><Label htmlFor="so">Owner</Label><select id="so" className="h-9 w-full rounded-md border bg-background px-2 text-sm" value={f.owner} onChange={(e) => setF({ ...f, owner: e.target.value })}><option value="">Anyone I can see</option>{me.data && <option value={me.data.id}>{me.data.name} (me)</option>}</select></div>
         <div className="flex items-end"><Button type="submit" disabled={!f.q.trim()}>Search</Button></div>
         <div className="flex flex-wrap gap-1 md:col-span-5">
-          {TYPES.map((t) => <button type="button" key={t} onClick={() => setF({ ...f, types: f.types.includes(t) ? f.types.filter((x) => x !== t) : [...f.types, t] })} className={`rounded border px-2 py-0.5 font-mono text-[10px] ${f.types.includes(t) ? "border-primary text-primary" : "text-muted-foreground"}`}>{t}</button>)}
+          {TYPES.map((t) => <button type="button" key={t} onClick={() => setF({ ...f, types: f.types.includes(t) ? f.types.filter((x) => x !== t) : [...f.types, t] })} className={`rounded border px-2 py-0.5 font-mono text-xs ${f.types.includes(t) ? "border-primary text-primary" : "text-muted-foreground"}`}>{t}</button>)}
         </div>
       </form>
       <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
@@ -90,7 +90,7 @@ function Search() {
           <div className="seer-panel divide-y">
             {results.data.map((h) => (
               <div key={h.type + h.id} className="px-4 py-3">
-                <div className="flex flex-wrap items-center gap-2"><span className="font-mono text-[10px] text-primary">{h.type}</span><StatusTag s={h.status} /><span className="seer-label">{new Date(h.date).toLocaleDateString("en-GB")}</span></div>
+                <div className="flex flex-wrap items-center gap-2"><span className="font-mono text-xs text-primary">{h.type}</span><StatusTag s={h.status} /><span className="seer-label">{new Date(h.date).toLocaleDateString("en-GB")}</span></div>
                 {h.caseId ? <Link to="/work/$caseId" params={{ caseId: h.caseId }} className="text-sm font-medium hover:underline">{h.title}</Link> : <Link to={h.type === "METHOD" ? "/memory" : "/openmind"} className="text-sm font-medium hover:underline">{h.title}</Link>}
                 <p className="text-xs text-muted-foreground">{h.snippet}</p>
               </div>
