@@ -16,3 +16,4 @@
 - Write AI-run provenance only through an authorised server handler; require matching saved content and version for reviews, so client edits cannot forge review evidence.
 - Save deliverable edits through the locking version RPC so content, history, review invalidation and audit remain one transaction.
 - Recompute approval blockers from saved case records in the database trigger; reject unresolved material findings rather than trusting browser readiness or informal waivers.
+- Govern reusable learning in the database (method_rules trigger + insert-only learning_reviews): activation needs a current-version challenge and bounded validation, cross-project use needs a transfer review and only the frozen six-field payload is retrieved, edits invalidate reviews, and a recorded contradiction withdraws the method — so browser code cannot promote unreviewed learning.

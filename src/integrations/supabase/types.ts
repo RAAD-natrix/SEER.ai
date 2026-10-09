@@ -480,8 +480,76 @@ export type Database = {
           },
         ]
       }
+      learning_reviews: {
+        Row: {
+          ai_run_id: string | null
+          boundaries: string | null
+          case_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          method_rule_id: string
+          notes: string
+          outcome: string
+          outcome_record_id: string | null
+          owner_id: string
+          rule_version: number
+        }
+        Insert: {
+          ai_run_id?: string | null
+          boundaries?: string | null
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          method_rule_id: string
+          notes: string
+          outcome?: string
+          outcome_record_id?: string | null
+          owner_id: string
+          rule_version?: number
+        }
+        Update: {
+          ai_run_id?: string | null
+          boundaries?: string | null
+          case_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          method_rule_id?: string
+          notes?: string
+          outcome?: string
+          outcome_record_id?: string | null
+          owner_id?: string
+          rule_version?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "learning_reviews_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_reviews_method_rule_id_fkey"
+            columns: ["method_rule_id"]
+            isOneToOne: false
+            referencedRelation: "method_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "learning_reviews_outcome_record_id_fkey"
+            columns: ["outcome_record_id"]
+            isOneToOne: false
+            referencedRelation: "outcome_records"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       method_rules: {
         Row: {
+          blocking_challenge: boolean
           case_id: string | null
           confidentiality_scope: string
           contamination: Json | null
@@ -501,12 +569,16 @@ export type Database = {
           status: string
           superseded_by: string | null
           tags: string[]
+          transfer_payload: Json | null
+          transfer_version: number | null
           updated_at: string
           use_when: string | null
           version: number
           why_useful: string | null
+          withdrawn_at: string | null
         }
         Insert: {
+          blocking_challenge?: boolean
           case_id?: string | null
           confidentiality_scope?: string
           contamination?: Json | null
@@ -526,12 +598,16 @@ export type Database = {
           status?: string
           superseded_by?: string | null
           tags?: string[]
+          transfer_payload?: Json | null
+          transfer_version?: number | null
           updated_at?: string
           use_when?: string | null
           version?: number
           why_useful?: string | null
+          withdrawn_at?: string | null
         }
         Update: {
+          blocking_challenge?: boolean
           case_id?: string | null
           confidentiality_scope?: string
           contamination?: Json | null
@@ -551,10 +627,13 @@ export type Database = {
           status?: string
           superseded_by?: string | null
           tags?: string[]
+          transfer_payload?: Json | null
+          transfer_version?: number | null
           updated_at?: string
           use_when?: string | null
           version?: number
           why_useful?: string | null
+          withdrawn_at?: string | null
         }
         Relationships: []
       }
@@ -1386,6 +1465,10 @@ export type Database = {
         Returns: boolean
       }
       is_team_member: { Args: { _uid: string }; Returns: boolean }
+      method_transfer_payload: {
+        Args: { m: Database["public"]["Tables"]["method_rules"]["Row"] }
+        Returns: Json
+      }
       save_output_version: {
         Args: {
           _content: string

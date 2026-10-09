@@ -8,6 +8,7 @@ import { StatusTag } from "./AppShell";
 import { scanContamination, type ContaminationResult } from "@/lib/seer/contamination";
 import { audit, useStage } from "@/lib/seer/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { LearningGovernance } from "./LearningGovernance";
 
 type Rule = Tables<"method_rules">;
 const FIELDS: [keyof Rule, string][] = [
@@ -50,7 +51,6 @@ export function MethodCard({ rule, onChange }: { rule: Rule; onChange: () => voi
       patch.contamination = scan as never;
       patch.status = scan.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : rule.status === "BLOCKED_FOR_GENERAL_REUSE" ? "PENDING_REVIEW" : rule.status;
     }
-    patch.version = rule.version + 1;
     const { error } = await supabase.from("method_rules").update(patch).eq("id", rule.id);
     if (error) { toast.error(error.message); return; }
     setEdit(false);
@@ -58,6 +58,7 @@ export function MethodCard({ rule, onChange }: { rule: Rule; onChange: () => voi
   }
   async function setStatus(status: string, event: string) {
     if ((status === "CANDIDATE" || status === "CANONICAL") && rule.status === "BLOCKED_FOR_GENERAL_REUSE") { toast.error("Blocked cards cannot be promoted. Edit and rescan first."); return; }
+    if (status === "CANONICAL" && rule.status === "PENDING_REVIEW") { const r = await supabase.from("method_rules").update({ status: "CANDIDATE" }).eq("id", rule.id); if (r.error) { toast.error(r.error.message); return; } }
     const { error } = await supabase.from("method_rules").update({ status }).eq("id", rule.id);
     if (error) { toast.error(error.message); return; }
     await audit(event, "method_rule", rule.id, { from: rule.status, to: status });
@@ -103,11 +104,12 @@ export function MethodCard({ rule, onChange }: { rule: Rule; onChange: () => voi
         ) : (
           <Button size="sm" variant="outline" onClick={() => setEdit(true)}>Edit</Button>
         )}
-        {rule.status === "PENDING_REVIEW" && <Button size="sm" onClick={() => setStatus("CANDIDATE", "METHOD_APPROVED_CANDIDATE")}>Approve as reusable candidate</Button>}
-        {["STARTER", "CANDIDATE"].includes(rule.status) && <Button size="sm" onClick={() => setStatus("CANONICAL", "METHOD_PROMOTED_CANONICAL")}>Confirm canonical</Button>}
+        {["PENDING_REVIEW", "WITHDRAWN"].includes(rule.status) && <Button size="sm" onClick={() => setStatus("CANDIDATE", "METHOD_ACTIVATED_CASE")}>Activate (this case only)</Button>}
+        {["PENDING_REVIEW", "CANDIDATE", "WITHDRAWN"].includes(rule.status) && <Button size="sm" onClick={() => setStatus("CANONICAL", "METHOD_TRANSFER_APPROVED")}>Approve cross-project transfer</Button>}
         {rule.status !== "RETIRED" && <Button size="sm" variant="ghost" onClick={() => setStatus("RETIRED", "METHOD_RETIRED")}>Retire</Button>}
         {rule.status === "RETIRED" && <Button size="sm" variant="ghost" onClick={() => setStatus(c?.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW", "METHOD_RESTORED")}>Restore for review</Button>}
       </div>
+      {!["RETIRED", "BLOCKED_FOR_GENERAL_REUSE"].includes(rule.status) && <LearningGovernance rule={rule} onChange={onChange} />}
     </div>
   );
 }

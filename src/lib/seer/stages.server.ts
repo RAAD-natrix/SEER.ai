@@ -62,6 +62,10 @@ export const STAGES = {
     }),
     task: "Study this past work to learn HOW the owner thinks, not WHAT the case was about. Produce the private review. Candidate methods must be fully DECONTEXTUALISED: no names, brands, organisations, people, dates, places, figures, prices, percentages, product or campaign names, or distinctive quoted phrases. Describe only generic strategic logic. List every case-specific named entity you notice in source_entities so the firewall can block leakage. Respect the classification: STYLE ONLY or TEMPLATE STRUCTURE ONLY sources should yield style/structure observations rather than reasoning methods.",
   },
+  METHOD_CHALLENGE: {
+    schema: z.object({ strongest_objection: str, rival_explanation: str, failure_conditions: S, missing_boundaries: S, counterexample: str, evidence_needed: S, verdict: z.enum(["SURVIVES_WITH_BOUNDARIES", "NEEDS_REVISION", "REJECT"]) }),
+    task: "Challenge SEER's own learned method card as an adversarial reviewer. Find the strongest objection, a rational rival explanation for why it seemed to work, conditions under which it fails, boundaries it is missing, a plausible counterexample and the evidence that would be needed before reuse. Do not praise it. One case never makes a universal rule. A verdict is advice to the owner, not activation.",
+  },
   CONTAMINATION_SCAN: {
     schema: z.object({ leak_found: z.boolean(), issues: S }),
     task: "Inspect the candidate method card for likely leakage of client-specific content: proper names, organisations, brands, contact details, specific dates, monetary values, percentages, project/campaign/product names, distinctive verbatim phrases, rare named entities or raw source passages. Be strict. Return issues as short descriptions.",

@@ -119,30 +119,36 @@ export const runSeerStage = createServerFn({ method: "POST" })
       ctx.readiness = data.extra?.["readiness"] ?? null;
     }
 
-    // ---- Memory retrieval: generic method cards only ----
+    // ---- Governed memory retrieval ----
+    // Cross-project: only built-in starters and transfer-approved CANONICAL cards, sent as the frozen
+    // six-field transfer payload. Same-case: validated CANDIDATE/CANONICAL cards from this case in full.
     let retrieved: { id: string; name: string; status: string }[] = [];
     const usesMemory = ["PATH_DISCUSS", "DIAGNOSIS", "OPTIONS_ANALYSIS", "OUTPUT_DRAFT", "PATH_REDTEAM", "STATE_UPDATE"].includes(stage);
-    if (usesMemory && settings.cross_case_retrieval !== false) {
-      const statuses = ["CANONICAL", "STARTER"];
-      if (settings.candidate_memory !== false) statuses.push("CANDIDATE");
-      const { data: rules } = await sb
-        .from("method_rules")
-        .select("id,name,status,memory_class,problem_type,mechanism,use_when,do_not_use_when,counterexamples,required_evidence,falsifier,tags")
-        .in("status", statuses)
-        .limit(300);
+    if (usesMemory) {
+      type Pick = { id: string; name: string; status: string; class: string; card: Record<string, unknown>; text: string; canon: boolean };
+      const pool: Pick[] = [];
+      if (settings.cross_case_retrieval !== false) {
+        const { data: rules } = await sb.from("method_rules")
+          .select("id,name,status,memory_class,problem_type,mechanism,use_when,do_not_use_when,required_evidence,tags,case_id,version,transfer_payload,transfer_version,blocking_challenge")
+          .in("status", ["CANONICAL", "STARTER"]).eq("blocking_challenge", false).limit(300);
+        for (const r of rules ?? []) {
+          if (r.status === "CANONICAL" && (r.case_id === (data.caseId ?? null) || !r.transfer_payload || r.transfer_version !== r.version)) continue;
+          const card = r.status === "CANONICAL" ? (r.transfer_payload as Record<string, unknown>) : { title: r.name, problem: r.problem_type, mechanism: r.mechanism, applies_when: r.use_when, avoid_when: r.do_not_use_when, required_evidence: r.required_evidence };
+          pool.push({ id: r.id, name: r.name, status: r.status, class: r.memory_class, card: { scope: "CROSS_PROJECT_TRANSFER", ...card }, text: [r.name, r.problem_type, r.mechanism, r.use_when, (r.tags ?? []).join(" ")].join(" "), canon: r.status === "CANONICAL" });
+        }
+      }
+      if (data.caseId && settings.candidate_memory !== false) {
+        const { data: own } = await sb.from("method_rules")
+          .select("id,name,status,memory_class,problem_type,mechanism,use_when,do_not_use_when,counterexamples,required_evidence,falsifier,tags")
+          .eq("case_id", data.caseId).in("status", ["CANDIDATE", "CANONICAL"]).eq("blocking_challenge", false).limit(50);
+        for (const r of own ?? []) pool.push({ id: r.id, name: r.name, status: r.status, class: r.memory_class, card: { scope: "SAME_CASE", name: r.name, mechanism: r.mechanism, use_when: r.use_when, do_not_use_when: r.do_not_use_when, counterexamples: r.counterexamples, required_evidence: r.required_evidence, falsifier: r.falsifier }, text: [r.name, r.mechanism, r.use_when].join(" "), canon: true });
+      }
       const q = tokens(JSON.stringify([ctx.case, ctx.active_path, data.text, ctx.strategic_state?.current_reframe]));
-      const scored = (rules ?? []).map((r) => {
-        const t = tokens([r.name, r.problem_type, r.mechanism, r.use_when, (r.tags ?? []).join(" ")].join(" "));
-        let s = 0;
-        t.forEach((w) => q.has(w) && s++);
-        if (r.counterexamples) s -= 0.5;
-        return { r, s };
-      });
-      const canon = scored.filter((x) => x.r.status === "CANONICAL").map((x) => x.r);
-      const rest = scored.filter((x) => x.r.status !== "CANONICAL" && x.s > 0).sort((a, b) => b.s - a.s).slice(0, depth === "QUICK" ? 3 : depth === "DEEP" ? 8 : 5).map((x) => x.r);
-      const style = scored.filter((x) => x.r.memory_class === "STYLE" && x.r.status === "CANONICAL").map((x) => x.r);
-      const picked = [...new Map([...canon, ...rest, ...style].map((r) => [r.id, r])).values()];
-      ctx.prior_methods = picked.map((r) => ({ id: r.id, name: r.name, status: r.status, class: r.memory_class, mechanism: r.mechanism, use_when: r.use_when, do_not_use_when: r.do_not_use_when, counterexamples: r.counterexamples }));
+      const scored = pool.map((r) => { let s = 0; tokens(r.text).forEach((w) => q.has(w) && s++); return { r, s }; });
+      const canon = scored.filter((x) => x.r.canon).map((x) => x.r);
+      const rest = scored.filter((x) => !x.r.canon && x.s > 0).sort((a, b) => b.s - a.s).slice(0, depth === "QUICK" ? 3 : depth === "DEEP" ? 8 : 5).map((x) => x.r);
+      const picked = [...new Map([...canon, ...rest].map((r) => [r.id, r])).values()];
+      ctx.prior_methods = picked.map((r) => ({ id: r.id, status: r.status, class: r.class, ...r.card }));
       retrieved = picked.map((r) => ({ id: r.id, name: r.name, status: r.status }));
     }
 

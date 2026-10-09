@@ -13,7 +13,7 @@ export const Route = createFileRoute("/_authenticated/memory")({
   component: Memory,
 });
 
-const STATUSES = ["", "STARTER", "PENDING_REVIEW", "CANDIDATE", "CANONICAL", "BLOCKED_FOR_GENERAL_REUSE", "CASE_ONLY", "RETIRED"];
+const STATUSES = ["", "STARTER", "PENDING_REVIEW", "CANDIDATE", "CANONICAL", "WITHDRAWN", "BLOCKED_FOR_GENERAL_REUSE", "CASE_ONLY", "RETIRED"];
 const CLASSES = ["", "METHOD", "STYLE", "TEMPLATE", "CASE_REFERENCE", "COUNTEREXAMPLE", "SYSTEM_FAILURE"];
 
 function Memory() {

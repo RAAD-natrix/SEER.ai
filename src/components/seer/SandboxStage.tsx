@@ -80,12 +80,12 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
     if (o.has_method || canonical || ownerResponse === "") {
       const m = o.candidate_method;
       const scan = await fullScan(m, run);
-      const status = scan.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : canonical ? "CANONICAL" : "PENDING_REVIEW";
+      // New learning always starts case-scoped and unreviewed; activation happens through governed review in Memory.
+      const status = scan.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW";
       const { data } = await supabase.from("method_rules").insert({ owner_id: owner, name: m.name, problem_type: m.problem_type, mechanism: m.mechanism, why_useful: m.why_useful, prerequisites: m.prerequisites, use_when: m.use_when, do_not_use_when: m.do_not_use_when, counterexamples: m.counterexamples, required_evidence: m.required_evidence, falsifier: m.falsifier, contamination: scan as never, status, case_id: caseId }).select("id").single();
       ruleId = data?.id ?? null;
       if (scan.blocked) toast.warning("Method card blocked by contamination scan — review it in Memory.");
-      else toast.success(canonical ? "Canonical principle recorded." : "Method candidate created for review in Memory.");
-      if (canonical && !scan.blocked) await audit("METHOD_PROMOTED_CANONICAL", "method_rule", ruleId);
+      else toast.success(canonical ? "Principle drafted. Challenge, validate and approve it in Memory before reuse." : "Method candidate created for review in Memory.");
     }
     await supabase.from("learning_events").insert({ owner_id: owner, case_id: caseId, event_type: canonical ? "CANONICAL_PRINCIPLE" : o.event_type, context: "Sandbox", previous_proposition: content.slice(0, 2000), owner_response: ownerResponse, revised_proposition: o.revised_proposition, reason: o.reason, method_rule_id: ruleId, confirmed: canonical, scope: ruleId ? "CANDIDATE" : "CASE" });
     return o;
