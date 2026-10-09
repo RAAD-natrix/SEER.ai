@@ -97,7 +97,7 @@ function SettingsPage() {
           <Block label="Last AI run">
             {last ? <p className="text-sm"><span className="font-mono">{last.stage}</span> · <StatusTag s={last.status} /> · {last.model ?? "no model recorded"} · {fmt(last.started_at)}{last.error ? ` · ${last.error}` : ""}</p> : <p className="text-sm text-muted-foreground">No AI runs yet.</p>}
           </Block>
-          <div className="overflow-x-auto"><table className="w-full text-xs">
+          <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Recent AI runs"><table className="w-full text-xs">
             <thead><tr className="text-left text-muted-foreground"><th>Stage</th><th>Status</th><th>Model</th><th>Tokens</th><th>Started</th></tr></thead>
             <tbody>{r.slice(0, 20).map((x) => <tr key={x.id} className="border-b"><td className="py-1 font-mono">{x.stage}</td><td><StatusTag s={x.status} /></td><td>{x.model ?? "—"}</td><td>{tok(x.usage) || "—"}</td><td>{fmt(x.started_at)}</td></tr>)}</tbody>
           </table></div>
