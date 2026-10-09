@@ -123,7 +123,7 @@ function Deliverables({ caseId }: { caseId: string }) {
             <div className="seer-panel p-4">
               <div className="flex flex-wrap items-center gap-2">
                 <h2 className="mr-auto font-medium">{o.title}</h2>
-                <StatusTag s={o.status} />
+                <StatusTag s={o.status !== "FINAL — OWNER APPROVED" && ((o.redteam as { material?: string[] } | null)?.material?.length ?? 0) > 0 ? "READY SUBJECT TO CORRECTIONS" : o.status} />
                 <Link to="/deliverable/$outputId" params={{ outputId: o.id }} className="rounded border border-primary px-2 py-1 text-xs text-primary">Open final deliverable screen →</Link>
               </div>
               <div className="mt-3 flex flex-wrap gap-2">

@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { supabase } from "@/integrations/supabase/client";
-import { AppShell, PageTitle, StatusTag } from "@/components/seer/AppShell";
+import { AppShell, StatusTag } from "@/components/seer/AppShell";
 import { RedTeamView } from "@/components/seer/SandboxStage";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -71,7 +71,7 @@ function DeliverablePage() {
       <Link to="/work/$caseId" params={{ caseId: o.case_id }} className="seer-label hover:text-primary">← Back to case</Link>
       <WorkbenchIdentity area="FINAL DELIVERABLE" title={o.title} />
       <div className="seer-panel mb-4 flex flex-wrap items-center gap-2 p-3">
-        <StatusTag s={o.status} /><span className="seer-label">v{o.version}{rd ? ` · readiness ${rd.index}` : ""}</span>
+        <StatusTag s={materialOpen ? "READY SUBJECT TO CORRECTIONS" : o.status} /><span className="seer-label">v{o.version}{rd?.index !== undefined ? ` · readiness ${rd.index}` : ""}</span>
         <span className="mr-auto" />
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_REDTEAM", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { redteam: r.output as never }); }}>{busy === "OUTPUT_REDTEAM" ? "Running…" : "Run Red Team"}</Button>
         <Button size="sm" variant="outline" disabled={!!busy || dirty} onClick={async () => { const r = await run({ stage: "OUTPUT_QA", caseId: o.case_id, outputId: o.id }); if (r) await recompute(o, { qa: r.output as never }); }}>{busy === "OUTPUT_QA" ? "Running…" : "Run QA"}</Button>
