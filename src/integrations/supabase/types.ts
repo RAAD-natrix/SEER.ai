@@ -1395,6 +1395,10 @@ export type Database = {
         }
         Returns: number
       }
+      saved_output_readiness: {
+        Args: { _case_id: string; _redteam: Json; _template: string }
+        Returns: Json
+      }
       seed_method_starters: { Args: { _uid: string }; Returns: undefined }
     }
     Enums: {

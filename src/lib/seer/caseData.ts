@@ -21,7 +21,7 @@ export type CaseBundle = Awaited<ReturnType<typeof loadCaseBundle>>;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const len = (v: any) => (Array.isArray(v) ? v.filter(Boolean).length : 0);
 
-export function readinessFor(b: CaseBundle, templateKey: string, redteam?: { fatal?: string[] } | null, approved = false) {
+export function readinessFor(b: CaseBundle, templateKey: string, redteam?: { fatal?: string[]; material?: string[] } | null, approved = false) {
   const t = templateByKey(templateKey);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const fields = (b.case?.fields ?? {}) as any;
@@ -51,6 +51,7 @@ export function readinessFor(b: CaseBundle, templateKey: string, redteam?: { fat
     closedPaths: b.paths.filter((p) => p.status === "CLOSED").length,
     economicsClaimedUnsupported: false,
     openFatalRedTeam: (redteam?.fatal?.length ?? 0) > 0,
+    openMaterialRedTeam: (redteam?.material?.length ?? 0) > 0,
     isImplementationOutput: t?.kind === "implementation",
     isDecisionOutput: t?.kind === "decision",
     ownerApproved: approved,

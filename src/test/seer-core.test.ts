@@ -55,6 +55,12 @@ describe("readiness index", () => {
   it("requires owner approval for FINAL", () => {
     expect(computeReadiness({ ...base, ownerApproved: false }).canBeFinal).toBe(false);
   });
+  it("blocks material findings even when QA and all other inputs pass", () => {
+    const r = computeReadiness({ ...base, openMaterialRedTeam: true });
+    expect(r.canBeFinal).toBe(false);
+    expect(r.index).toBeLessThanOrEqual(65);
+    expect(r.blockers.some((b) => b.label.includes("material"))).toBe(true);
+  });
 });
 
 describe("contamination scan", () => {

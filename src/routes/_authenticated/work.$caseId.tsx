@@ -13,6 +13,7 @@ import { ResearchStage } from "@/components/seer/ResearchStage";
 import { SandboxStage } from "@/components/seer/SandboxStage";
 import { OutcomesStage } from "@/components/seer/OutcomesStage";
 import { OverviewStage } from "@/components/seer/OverviewStage";
+import { WorkbenchIdentity } from "@/components/seer/BrandIdentity";
 
 export const Route = createFileRoute("/_authenticated/work/$caseId")({
   head: () => ({ meta: [{ title: "Case — SEER.ai" }, { name: "description", content: "Review the brief, research, strategic alternatives and outcomes for a SEER.ai case." }, { property: "og:title", content: "Case — SEER.ai" }, { property: "og:description", content: "Review the brief, research, strategic alternatives and outcomes for a SEER.ai case." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -46,12 +47,12 @@ function CasePage() {
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
         <div>
           <div className="seer-label">{c?.client || "Case"} · {c?.engagement_mode}</div>
-          <h1 className="text-xl font-semibold tracking-tight">{c?.title ?? "…"}</h1>
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <StatusTag s={c?.status ?? "ACTIVE"} /> Last saved {c ? new Date(c.updated_at).toLocaleString("en-GB") : "—"}
         </div>
       </div>
+      <WorkbenchIdentity area="WORK" title={c?.title ?? "Case"} />
       <nav aria-label="Workflow" className="mb-6 grid grid-cols-5 gap-1">
         {STEPS.map((s, i) => (
           <button key={s} onClick={() => { setStep(s); if (c && s !== "OVERVIEW" && c.stage !== s) supabase.from("cases").update({ stage: s }).eq("id", caseId).then(() => kase.refetch()); }} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>

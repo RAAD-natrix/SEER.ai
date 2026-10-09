@@ -1,4 +1,6 @@
 # SEER.ai roadmap
+- [ ] Apply shared DNA identity to Think, Work and Deliverables and verify live pages
+- [ ] Re-test approval integrity, MCP sign-in and release checklist; deliver attachment comparison and 7.1/8 verdict
 - [x] Brand Word/PDF exports with Base Pairing logo, document identity and recurring footer; verify real files
 - [x] Audit private-workbench publish readiness and apply first priority integrity, security and operational fixes
 - [x] Embed bounded interdisciplinary strategy, PDCA/DMAIC and owned experiments in reasoning and outcomes
