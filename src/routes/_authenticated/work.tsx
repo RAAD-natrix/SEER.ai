@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { audit, uid } from "@/lib/seer/client";
 
 export const Route = createFileRoute("/_authenticated/work")({
-  head: () => ({ meta: [{ title: "Work — SEER.ai" }, { name: "description", content: "Live strategy cases." }] }),
+  head: () => ({ meta: [{ title: "Work — SEER.ai" }, { name: "description", content: "Live strategy cases." }, { property: "og:title", content: "Work — SEER.ai" }, { property: "og:description", content: "Live strategy cases." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: WorkLayout,
 });
 

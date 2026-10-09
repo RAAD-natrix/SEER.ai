@@ -15,7 +15,7 @@ import { OutcomesStage } from "@/components/seer/OutcomesStage";
 import { OverviewStage } from "@/components/seer/OverviewStage";
 
 export const Route = createFileRoute("/_authenticated/work/$caseId")({
-  head: () => ({ meta: [{ title: "Case — SEER.ai" }] }),
+  head: () => ({ meta: [{ title: "Case — SEER.ai" }, { name: "description", content: "Review the brief, research, strategic alternatives and outcomes for a SEER.ai case." }, { property: "og:title", content: "Case — SEER.ai" }, { property: "og:description", content: "Review the brief, research, strategic alternatives and outcomes for a SEER.ai case." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: CasePage,
 });
 

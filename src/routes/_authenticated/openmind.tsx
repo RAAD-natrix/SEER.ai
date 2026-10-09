@@ -14,7 +14,7 @@ import { audit, uid, useStage } from "@/lib/seer/client";
 import type { Tables } from "@/integrations/supabase/types";
 
 export const Route = createFileRoute("/_authenticated/openmind")({
-  head: () => ({ meta: [{ title: "Open Mind — SEER.ai" }, { name: "description", content: "Explore ideas not yet attached to a job." }] }),
+  head: () => ({ meta: [{ title: "Open Mind — SEER.ai" }, { name: "description", content: "Explore ideas not yet attached to a job." }, { property: "og:title", content: "Open Mind — SEER.ai" }, { property: "og:description", content: "Explore ideas not yet attached to a job." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: OpenMind,
 });
 

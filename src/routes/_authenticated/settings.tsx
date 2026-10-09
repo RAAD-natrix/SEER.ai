@@ -10,7 +10,7 @@ import { getSystemStatus } from "@/lib/seer/status.functions";
 import { uid } from "@/lib/seer/client";
 
 export const Route = createFileRoute("/_authenticated/settings")({
-  head: () => ({ meta: [{ title: "Settings & System Status — SEER.ai" }, { name: "description", content: "Owner settings, AI usage, model version and system health for SEER.ai." }] }),
+  head: () => ({ meta: [{ title: "Settings & System Status — SEER.ai" }, { name: "description", content: "Owner settings, AI usage, model version and system health for SEER.ai." }, { property: "og:title", content: "Settings & System Status — SEER.ai" }, { property: "og:description", content: "Owner settings, AI usage, model version and system health for SEER.ai." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: SettingsPage,
 });
 

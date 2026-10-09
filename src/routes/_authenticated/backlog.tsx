@@ -6,7 +6,7 @@ import { AppShell, PageTitle } from "@/components/seer/AppShell";
 import { PIPELINE } from "@/components/seer/StageTracker";
 
 export const Route = createFileRoute("/_authenticated/backlog")({
-  head: () => ({ meta: [{ title: "Backlog — SEER.ai" }, { name: "description", content: "Cases with unfinished AI stages." }] }),
+  head: () => ({ meta: [{ title: "Backlog — SEER.ai" }, { name: "description", content: "Cases with unfinished AI stages." }, { property: "og:title", content: "Backlog — SEER.ai" }, { property: "og:description", content: "Cases with unfinished AI stages." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
   component: BacklogPage,
 });
 
