@@ -43,6 +43,13 @@
       "when": 1791512712855,
       "tag": "0005_private_workbench_guardrails",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791513549533,
+      "tag": "0006_ai_failure_classification",
+      "breakpoints": true
     }
   ]
 }

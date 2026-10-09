@@ -19,6 +19,7 @@ export type Database = {
           case_id: string | null
           completed_at: string | null
           error: string | null
+          failure_class: string | null
           frozen_state: Json | null
           id: string
           input_ids: Json | null
@@ -37,6 +38,7 @@ export type Database = {
           case_id?: string | null
           completed_at?: string | null
           error?: string | null
+          failure_class?: string | null
           frozen_state?: Json | null
           id?: string
           input_ids?: Json | null
@@ -55,6 +57,7 @@ export type Database = {
           case_id?: string | null
           completed_at?: string | null
           error?: string | null
+          failure_class?: string | null
           frozen_state?: Json | null
           id?: string
           input_ids?: Json | null
