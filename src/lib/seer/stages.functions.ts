@@ -103,6 +103,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
       const { data: o } = await sb.from("outputs").select("*").eq("id", data.outputId).single();
       if (!o) throw new Error("Output not found");
       ctx.output = { title: o.title, template: templateByKey(o.template_key), content: clip(o.content, 40000) };
+       if (o.content.length > 40000) throw new Error("Deliverable exceeds the review limit. Shorten it or review separate modules; no partial QA is permitted.");
       inputIds.output_id = o.id;
       inputIds.output_version = o.version;
       if (data.caseId && o.case_id !== data.caseId) throw new Error("Output does not belong to case");
@@ -155,7 +156,7 @@ export const runSeerStage = createServerFn({ method: "POST" })
       .insert({
         owner_id: uid, case_id: data.caseId ?? null, path_id: data.pathId ?? null, stage,
         prompt_version: PROMPT_VERSION, status: "RUNNING", input_ids: inputIds as never,
-        retrieved_method_ids: retrieved.map((r) => r.id), frozen_state: { state: ctx.strategic_state ?? null, path: ctx.active_path ?? null } as never,
+         retrieved_method_ids: retrieved.map((r) => r.id), frozen_state: { state: ctx.strategic_state ?? null, path: ctx.active_path ?? null, reviewed_content: ctx.output?.content ?? null } as never,
       })
       .select("id")
       .single();
