@@ -221,7 +221,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
                 {["CLOSED", "REJECTED", "MERGED", "PAUSED"].includes(active.status) && <Button size="sm" variant="outline" onClick={() => setStatus(active, "REOPENED", { version: active.version + 1, reopened_at: new Date().toISOString() })}>REOPEN</Button>}
                 <Button size="sm" variant="outline" disabled={!!busy} onClick={redteam}>RED TEAM</Button>
               </div>
-              <Input className="mt-2" aria-label="Thesis" placeholder="One-sentence thesis" defaultValue={active.thesis} key={active.id + active.thesis} onBlur={(e) => e.target.value !== active.thesis && supabase.from("thought_paths").update({ thesis: e.target.value }).eq("id", active.id).then(refresh)} />
+              <Input className="mt-2" aria-label="Thesis" placeholder="One-sentence thesis" defaultValue={active.thesis} key={active.id + active.thesis} onBlur={(e) => e.target.value !== active.thesis && void must(supabase.from("thought_paths").update({ thesis: e.target.value }).eq("id", active.id)).then(refresh)} />
             </div>
             {closeDraft && (
               <div className="seer-panel space-y-2 border-primary p-3">

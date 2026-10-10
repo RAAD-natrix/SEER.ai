@@ -60,7 +60,7 @@ function CasePage() {
       <WorkbenchIdentity area="WORK" title={c?.title ?? "Case"} />
       <nav aria-label="Workflow" className="mb-6 grid grid-cols-5 gap-1">
         {STEPS.map((s, i) => (
-          <button key={s} onClick={() => { setStep(s); if (c && s !== "OVERVIEW" && c.stage !== s) supabase.from("cases").update({ stage: s }).eq("id", caseId).then(() => kase.refetch()); }} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>
+          <button key={s} onClick={() => { setStep(s); if (c && s !== "OVERVIEW" && c.stage !== s) void must(supabase.from("cases").update({ stage: s }).eq("id", caseId)).then(() => kase.refetch()); }} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>
             {i === 0 ? "◆" : i} {s}
           </button>
         ))}
@@ -128,8 +128,10 @@ function BriefStage({ caseId, onSaved }: { caseId: string; onSaved: () => void }
 
   async function saveAnswers() {
     if (!shown) return;
+    // The brief text and fields of a version are locked; answers are owner annotations on that version.
     await must(supabase.from("brief_versions").update({ answers: answers as never }).eq("id", shown.id));
-    toast.success("Answers saved to this brief version.");
+    await logAudit("BRIEF_ANSWERS_SAVED", "brief_versions", shown.id);
+    toast.success(`Answers saved to brief v${shown.version}. The brief text itself is unchanged.`);
     versions.refetch();
   }
 
