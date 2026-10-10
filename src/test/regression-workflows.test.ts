@@ -157,3 +157,47 @@ describe("privacy wording", () => {
     expect(consentLabel("ALLOWED_AI")).toBe("AI processing allowed");
   });
 });
+
+import { gateOpenMindAI, provenanceChain } from "@/lib/seer/openmindPrivacy";
+
+describe("Open Mind privacy gate", () => {
+  const typed = { id: "t", parent_id: null, source_id: null };
+  const fileItem = { id: "f", parent_id: null, source_id: "s1" };
+  const child = { id: "c", parent_id: "f", source_id: null };
+  const grandchild = { id: "g", parent_id: "c", source_id: null };
+  const all = [typed, fileItem, child, grandchild];
+  const allowed = { id: "s1", processing_consent: "ALLOWED_AI", deleted_at: null };
+  const local = { id: "s1", processing_consent: "LOCAL_ONLY", deleted_at: null };
+
+  it("blocks exploring a newly uploaded private file", () => {
+    const r = gateOpenMindAI([], [], "LOCAL_ONLY");
+    expect(r.ok).toBe(false);
+    expect(!r.ok && r.reason).toMatch(/Saved only/);
+  });
+  it("allows plain typed text with no file and no parent", () => {
+    expect(gateOpenMindAI([], [], undefined)).toEqual({ ok: true });
+    expect(gateOpenMindAI(provenanceChain(typed, all), [])).toEqual({ ok: true });
+  });
+  it("allows an AI-permitted file", () => {
+    expect(gateOpenMindAI([], [], "ALLOWED_AI")).toEqual({ ok: true });
+    expect(gateOpenMindAI(provenanceChain(fileItem, all), [allowed])).toEqual({ ok: true });
+  });
+  it("blocks a branch whose ancestor came from a private file", () => {
+    const r = gateOpenMindAI(provenanceChain(grandchild, all), [local]);
+    expect(r.ok).toBe(false);
+    expect(!r.ok && r.reason).toMatch(/not undone/);
+  });
+  it("blocks promotion after consent was revoked", () => {
+    expect(gateOpenMindAI(provenanceChain(child, all), [local]).ok).toBe(false);
+  });
+  it("blocks when the source is missing or deleted", () => {
+    expect(gateOpenMindAI(provenanceChain(fileItem, all), []).ok).toBe(false);
+    expect(gateOpenMindAI(provenanceChain(fileItem, all), [{ ...allowed, deleted_at: "2026-10-10" }]).ok).toBe(false);
+  });
+  it("blocks broken or cyclic chains", () => {
+    expect(provenanceChain({ id: "x", parent_id: "missing", source_id: null }, all)).toBeNull();
+    const a = { id: "a", parent_id: "b", source_id: null }, b = { id: "b", parent_id: "a", source_id: null };
+    expect(provenanceChain(a, [a, b])).toBeNull();
+    expect(gateOpenMindAI(null, []).ok).toBe(false);
+  });
+});
