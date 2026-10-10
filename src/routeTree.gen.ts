@@ -28,6 +28,7 @@ import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedDeliverableOutputIdRouteImport } from './routes/_authenticated/deliverable.$outputId'
 import { Route as AuthenticatedWorkCaseIdRouteImport } from './routes/_authenticated/work.$caseId'
+import { Route as AuthenticatedWorkCaseIdAskRouteImport } from './routes/_authenticated/work.$caseId.ask'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -126,6 +127,12 @@ const AuthenticatedWorkCaseIdRoute = AuthenticatedWorkCaseIdRouteImport.update({
   path: '/$caseId',
   getParentRoute: () => AuthenticatedWorkRoute,
 } as any)
+const AuthenticatedWorkCaseIdAskRoute =
+  AuthenticatedWorkCaseIdAskRouteImport.update({
+    id: '/ask',
+    path: '/ask',
+    getParentRoute: () => AuthenticatedWorkCaseIdRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -145,7 +152,8 @@ export interface FileRoutesByFullPath {
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
-  '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
+  '/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
+  '/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -165,7 +173,8 @@ export interface FileRoutesByTo {
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
-  '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
+  '/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
+  '/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -187,7 +196,8 @@ export interface FileRoutesById {
   '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
-  '/_authenticated/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
+  '/_authenticated/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
+  '/_authenticated/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -210,6 +220,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/deliverable/$outputId'
     | '/work/$caseId'
+    | '/work/$caseId/ask'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -230,6 +241,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/deliverable/$outputId'
     | '/work/$caseId'
+    | '/work/$caseId/ask'
   id:
     | '__root__'
     | '/'
@@ -251,6 +263,7 @@ export interface FileRouteTypes {
     | '/.lovable/oauth/consent'
     | '/_authenticated/deliverable/$outputId'
     | '/_authenticated/work/$caseId'
+    | '/_authenticated/work/$caseId/ask'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -399,15 +412,36 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkCaseIdRouteImport
       parentRoute: typeof AuthenticatedWorkRoute
     }
+    '/_authenticated/work/$caseId/ask': {
+      id: '/_authenticated/work/$caseId/ask'
+      path: '/ask'
+      fullPath: '/work/$caseId/ask'
+      preLoaderRoute: typeof AuthenticatedWorkCaseIdAskRouteImport
+      parentRoute: typeof AuthenticatedWorkCaseIdRoute
+    }
   }
 }
 
+interface AuthenticatedWorkCaseIdRouteChildren {
+  AuthenticatedWorkCaseIdAskRoute: typeof AuthenticatedWorkCaseIdAskRoute
+}
+
+const AuthenticatedWorkCaseIdRouteChildren: AuthenticatedWorkCaseIdRouteChildren =
+  {
+    AuthenticatedWorkCaseIdAskRoute: AuthenticatedWorkCaseIdAskRoute,
+  }
+
+const AuthenticatedWorkCaseIdRouteWithChildren =
+  AuthenticatedWorkCaseIdRoute._addFileChildren(
+    AuthenticatedWorkCaseIdRouteChildren,
+  )
+
 interface AuthenticatedWorkRouteChildren {
-  AuthenticatedWorkCaseIdRoute: typeof AuthenticatedWorkCaseIdRoute
+  AuthenticatedWorkCaseIdRoute: typeof AuthenticatedWorkCaseIdRouteWithChildren
 }
 
 const AuthenticatedWorkRouteChildren: AuthenticatedWorkRouteChildren = {
-  AuthenticatedWorkCaseIdRoute: AuthenticatedWorkCaseIdRoute,
+  AuthenticatedWorkCaseIdRoute: AuthenticatedWorkCaseIdRouteWithChildren,
 }
 
 const AuthenticatedWorkRouteWithChildren =

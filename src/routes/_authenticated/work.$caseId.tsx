@@ -50,6 +50,7 @@ function CasePage() {
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <StatusTag s={c?.status ?? "ACTIVE"} /> Last saved {c ? new Date(c.updated_at).toLocaleString("en-GB") : "—"}
+          <Link to="/work/$caseId/ask" params={{ caseId }} className="rounded border border-primary px-2 py-1 font-mono text-xs tracking-wider text-primary">ASK SEER</Link>
         </div>
       </div>
       <WorkbenchIdentity area="WORK" title={c?.title ?? "Case"} />
