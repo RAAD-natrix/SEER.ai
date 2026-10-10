@@ -170,12 +170,9 @@ export async function handleAskSeerChat(request: Request): Promise<Response> {
 
   const result = streamText({
     model: provider.responses(seerModel()),
-    system: `${SYSTEM_CHARTER}\n\n${ASK_INSTRUCTIONS}`,
-    messages: [
-      // Case record travels as a system message so history stays compact.
-      { role: "system" as const, content: `<untrusted_data name="case_record">\n${JSON.stringify(ctx).slice(0, 90000)}\n</untrusted_data>` },
-      ...modelMessages,
-    ],
+    // Case record travels in the system instructions so history stays compact.
+    system: `${SYSTEM_CHARTER}\n\n${ASK_INSTRUCTIONS}\n\n<untrusted_data name="case_record">\n${JSON.stringify(ctx).slice(0, 90000)}\n</untrusted_data>`,
+    messages: modelMessages,
     abortSignal: request.signal,
     maxRetries: 0,
     providerOptions: {
