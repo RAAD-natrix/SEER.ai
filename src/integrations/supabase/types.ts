@@ -182,6 +182,7 @@ export type Database = {
           owner_id: string
           parts: Json
           role: string
+          sdk_id: string | null
           thread_id: string
         }
         Insert: {
@@ -190,6 +191,7 @@ export type Database = {
           owner_id?: string
           parts?: Json
           role: string
+          sdk_id?: string | null
           thread_id: string
         }
         Update: {
@@ -198,6 +200,7 @@ export type Database = {
           owner_id?: string
           parts?: Json
           role?: string
+          sdk_id?: string | null
           thread_id?: string
         }
         Relationships: [
