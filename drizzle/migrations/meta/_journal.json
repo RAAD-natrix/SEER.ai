@@ -99,6 +99,13 @@
       "when": 1791630223748,
       "tag": "0013_case_chat_messages_sdk_id",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1791631561819,
+      "tag": "0014_lock_brief_version_text",
+      "breakpoints": true
     }
   ]
 }
