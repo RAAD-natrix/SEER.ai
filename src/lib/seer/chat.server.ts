@@ -172,15 +172,9 @@ export async function handleAskSeerChat(request: Request): Promise<Response> {
     model: provider.responses(seerModel()),
     system: `${SYSTEM_CHARTER}\n\n${ASK_INSTRUCTIONS}`,
     messages: [
-      ...modelMessages.slice(0, -1),
-      // Case record travels with the latest turn so history stays compact.
-      ...modelMessages.slice(-1).map((m) => ({
-        ...m,
-        content: [
-          { type: "text" as const, text: `<untrusted_data name="case_record">\n${JSON.stringify(ctx).slice(0, 90000)}\n</untrusted_data>` },
-          ...(Array.isArray(m.content) ? m.content : [{ type: "text" as const, text: String(m.content) }]),
-        ],
-      })),
+      // Case record travels as a system message so history stays compact.
+      { role: "system" as const, content: `<untrusted_data name="case_record">\n${JSON.stringify(ctx).slice(0, 90000)}\n</untrusted_data>` },
+      ...modelMessages,
     ],
     abortSignal: request.signal,
     maxRetries: 0,
@@ -198,7 +192,7 @@ export async function handleAskSeerChat(request: Request): Promise<Response> {
   return result.toUIMessageStreamResponse({
     originalMessages: messages,
     sendReasoning: true,
-    headers: runId ? { [RUN_ID_HEADER]: runId } : undefined,
+    ...(runId ? { headers: { [RUN_ID_HEADER]: runId } } : {}),
     onFinish: async ({ responseMessage }) => {
       const { error } = await sb.from("case_chat_messages").insert({
         thread_id: threadId,
