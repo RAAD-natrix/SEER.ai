@@ -30,6 +30,27 @@ function AskThreadPage() {
     staleTime: Infinity,
   });
 
+  return (
+    <AppShell>
+      <WorkbenchIdentity area="ASK" title={kase.data?.title ?? "Case"} />
+      <div className="mb-3 flex items-center justify-between gap-2">
+        <p className="text-xs text-muted-foreground">Answers draw only on this case's record. Local-only files are never sent to the AI.</p>
+        <Link to="/work/$caseId/ask" params={{ caseId }} className="text-sm text-primary underline-offset-4 hover:underline">All conversations</Link>
+      </div>
+      <div className="seer-panel flex h-[calc(100dvh-16rem)] min-h-[24rem] flex-col">
+        {history.isLoading ? (
+          <Shimmer className="p-4 text-sm">Loading conversation…</Shimmer>
+        ) : history.isError ? (
+          <p className="p-4 text-sm text-destructive">This conversation could not be loaded. Please go back and try again.</p>
+        ) : (
+          <ChatPanel key={threadId} caseId={caseId} threadId={threadId} initialMessages={(history.data ?? []) as UIMessage[]} />
+        )}
+      </div>
+    </AppShell>
+  );
+}
+
+function ChatPanel({ caseId, threadId, initialMessages }: { caseId: string; threadId: string; initialMessages: UIMessage[] }) {
   const transport = useMemo(
     () =>
       new DefaultChatTransport({
@@ -48,7 +69,7 @@ function AskThreadPage() {
   const { messages, sendMessage, status, stop, error } = useChat({
     id: threadId,
     transport,
-    messages: (history.data ?? []) as UIMessage[],
+    messages: initialMessages,
     onError: (e) => toast.error(e.message || "Ask SEER failed. Please retry."),
   });
   const busy = status === "submitted" || status === "streaming";
@@ -59,58 +80,49 @@ function AskThreadPage() {
   }, [busy, threadId]);
 
   return (
-    <AppShell>
-      <WorkbenchIdentity area="ASK" title={kase.data?.title ?? "Case"} />
-      <div className="mb-3 flex items-center justify-between gap-2">
-        <p className="text-xs text-muted-foreground">Answers draw only on this case's record. Local-only files are never sent to the AI.</p>
-        <Link to="/work/$caseId/ask" params={{ caseId }} className="text-sm text-primary underline-offset-4 hover:underline">All conversations</Link>
+    <>
+      <Conversation className="flex-1">
+        <ConversationContent>
+          {messages.length === 0 ? (
+            <ConversationEmptyState
+              title="Ask SEER about this case"
+              description="Try: What contradicts the current judgement? What evidence is missing? What would change your mind?"
+            />
+          ) : (
+            messages.map((m) => (
+              <Message key={m.id} from={m.role}>
+                <MessageContent>
+                  {m.parts.map((part, i) =>
+                    part.type === "text" ? (
+                      m.role === "assistant" ? (
+                        <MessageResponse key={i}>{part.text}</MessageResponse>
+                      ) : (
+                        <p key={i} className="whitespace-pre-wrap">{part.text}</p>
+                      )
+                    ) : null,
+                  )}
+                </MessageContent>
+              </Message>
+            ))
+          )}
+          {status === "submitted" && <Shimmer className="text-sm">SEER is thinking…</Shimmer>}
+          {error && <p className="p-2 text-sm text-destructive">{error.message || "Something went wrong. Your message is preserved above — please retry."}</p>}
+        </ConversationContent>
+        <ConversationScrollButton />
+      </Conversation>
+      <div className="border-t p-3">
+        <PromptInput
+          onSubmit={({ text }) => {
+            if (!text.trim() || busy) return;
+            sendMessage({ text });
+          }}
+        >
+          <PromptInputTextarea ref={textareaRef} placeholder="Question the case thinking…" disabled={busy} />
+          <PromptInputFooter className="justify-end">
+            <PromptInputSubmit status={status} onStop={stop} disabled={busy && status !== "streaming"} />
+          </PromptInputFooter>
+        </PromptInput>
       </div>
-      <div className="seer-panel flex h-[calc(100dvh-16rem)] min-h-[24rem] flex-col">
-        <Conversation className="flex-1">
-          <ConversationContent>
-            {history.isLoading ? (
-              <Shimmer className="p-4 text-sm">Loading conversation…</Shimmer>
-            ) : messages.length === 0 ? (
-              <ConversationEmptyState
-                title="Ask SEER about this case"
-                description="Try: What contradicts the current judgement? What evidence is missing? What would change your mind?"
-              />
-            ) : (
-              messages.map((m) => (
-                <Message key={m.id} from={m.role}>
-                  <MessageContent>
-                    {m.parts.map((part, i) =>
-                      part.type === "text" ? (
-                        m.role === "assistant" ? (
-                          <MessageResponse key={i}>{part.text}</MessageResponse>
-                        ) : (
-                          <p key={i} className="whitespace-pre-wrap">{part.text}</p>
-                        )
-                      ) : null,
-                    )}
-                  </MessageContent>
-                </Message>
-              ))
-            )}
-            {status === "submitted" && <Shimmer className="text-sm">SEER is thinking…</Shimmer>}
-            {error && <p className="p-2 text-sm text-destructive">{error.message || "Something went wrong. Your message is preserved above — please retry."}</p>}
-          </ConversationContent>
-          <ConversationScrollButton />
-        </Conversation>
-        <div className="border-t p-3">
-          <PromptInput
-            onSubmit={({ text }) => {
-              if (!text.trim() || busy) return;
-              sendMessage({ text });
-            }}
-          >
-            <PromptInputTextarea ref={textareaRef} placeholder="Question the case thinking…" disabled={busy} />
-            <PromptInputFooter className="justify-end">
-              <PromptInputSubmit status={status} onStop={stop} disabled={busy && status !== "streaming"} />
-            </PromptInputFooter>
-          </PromptInput>
-        </div>
-      </div>
-    </AppShell>
+    </>
   );
 }
