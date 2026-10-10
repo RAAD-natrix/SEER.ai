@@ -49,6 +49,7 @@ function AskIndexPage() {
     }
   }
 
+  if (pathname !== `/work/${caseId}/ask`) return <Outlet />;
   return (
     <AppShell>
       <WorkbenchIdentity area="ASK" title={kase.data?.title ?? "Case"} />
