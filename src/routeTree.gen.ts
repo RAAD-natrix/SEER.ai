@@ -24,6 +24,7 @@ import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThinkRouteImport } from './routes/_authenticated/think'
 import { Route as AuthenticatedWorkRouteImport } from './routes/_authenticated/work'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedDeliverableOutputIdRouteImport } from './routes/_authenticated/deliverable.$outputId'
 import { Route as AuthenticatedWorkCaseIdRouteImport } from './routes/_authenticated/work.$caseId'
@@ -104,6 +105,11 @@ const AuthenticatedWorkRoute = AuthenticatedWorkRouteImport.update({
   path: '/work',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -136,6 +142,7 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/think': typeof AuthenticatedThinkRoute
   '/work': typeof AuthenticatedWorkRouteWithChildren
+  '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
@@ -155,6 +162,7 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/think': typeof AuthenticatedThinkRoute
   '/work': typeof AuthenticatedWorkRouteWithChildren
+  '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
@@ -176,6 +184,7 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/think': typeof AuthenticatedThinkRoute
   '/_authenticated/work': typeof AuthenticatedWorkRouteWithChildren
+  '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/_authenticated/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
@@ -197,6 +206,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/think'
     | '/work'
+    | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/deliverable/$outputId'
     | '/work/$caseId'
@@ -216,6 +226,7 @@ export interface FileRouteTypes {
     | '/settings'
     | '/think'
     | '/work'
+    | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/deliverable/$outputId'
     | '/work/$caseId'
@@ -236,6 +247,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/think'
     | '/_authenticated/work'
+    | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/_authenticated/deliverable/$outputId'
     | '/_authenticated/work/$caseId'
@@ -248,6 +260,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiChatRoute: typeof ApiChatRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
@@ -358,6 +371,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -430,6 +450,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiChatRoute: ApiChatRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport

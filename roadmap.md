@@ -1,37 +1,7 @@
-# SEER.ai roadmap
-- [x] v7.1: gold DNA identity on every internal page, version 7.1.0, full check passed, fresh pharmacy case (73d70f48) Brief analysis run, branded exports re-verified
-- [x] Apply shared DNA identity to Think, Work and Deliverables and verify live pages
-- [x] Audit approval integrity, MCP boundaries and release checklist; document attachment comparison and 7.1/8 verdict (remaining gates below)
-- [x] Brand Word/PDF exports with Base Pairing logo, document identity and recurring footer; verify real files
-- [x] Audit private-workbench publish readiness and apply first priority integrity, security and operational fixes
-- [x] Embed bounded interdisciplinary strategy, PDCA/DMAIC and owned experiments in reasoning and outcomes
-- [x] Run separate full-stage synthetic audit case (932d6472-4db3-4de5-bd16-9f7e731be842); 11/11 stages completed; audit QA passed; both formats 2 pages
-- [x] Server-owned review provenance and atomic version edits; forged ledger/review writes rejected in live testing
-- [ ] Publish gate: independent collaborator-negative tests (requires a separately authorised analyst account)
-- [x] Enforce saved-record hard blockers server-side; reject forged readiness and unresolved material Red Team findings (synthetic v3 remains unapproved)
-- [ ] Publish gate: full positive/negative approval matrix, stale-context invalidation and version-specific finding dispositions
-- [ ] Publish gate: real external MCP OAuth sign-in, tool calls, refresh/revoke and wrong-user checks on intended origin
-- [ ] Publish gate: live acceptance of eight stages without completed ledger history, all output templates and failure recovery
-- [x] 7.1: server-governed learning — challenge, bounded validation, owner activation, six-field transfer, edit invalidation, outcome contradiction withdrawal (live-tested)
-- [ ] Publish gate: production signup/password settings verification, restoration rehearsal and GitHub first green Actions run
-- [x] Incorporate Navin's gold DNA brand, Base Pairing identity and verify the workbench appearance
-- [x] Auth, schema, RLS, private storage, method starters
-- [x] THINK with contamination firewall
-- [x] WORK / Brief + triage
-- [x] WORK / Research, Sandbox, Outcomes
-- [x] OPEN MIND
-- [x] Memory
-- [x] Search + saved views
-- [x] Owner account + end-to-end UI run of sample case (Kopi Rimba)
-- [x] Settings / System Status
-- [x] WORK case overview
-- [x] Strategic state editor (Sandbox + Overview)
-- [x] Email/password: reset link + set password in Settings
-- [ ] GitHub connection (owner action: + → GitHub → Connect project)
-- [x] Outcomes path-to-FINAL + AI stage progress tracker
-- [x] Walk real case (Enrich pitch) through all stages
-- [x] Backlog screen + case/stage ownership
-- [ ] Email when record is Ready for approval (needs owner email domain)
-- [x] Analyst accounts: owner-controlled signup plus expiring email invitations, shared case access, team names in ownership
-- [x] Case analysis panel (Diagnosis, Options, Risks) + final deliverable screen (edit → Red Team → QA → approve → Word)
-- [x] Enrich SCR remains FINAL v4; branded Word/PDF verified at two A4 pages without changing approved content
+# Roadmap
+
+## In progress
+- Ask SEER: threaded per-case AI chat (threads + messages tables done; chat.server.ts, chat.functions.ts, /api/chat route done). Remaining: thread list page, chat page, link from case page, verify build + live test.
+
+## Open
+- Delete feature: delete sources/files, cases, and brief versions (user request). Needs soft-delete for cases (deleted_at exists), hard or soft delete for brief_versions (immutable — check 0004_keep_versions_immutable trigger before deleting), sources already have deleted_at.
