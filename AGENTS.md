@@ -20,3 +20,6 @@
 - Express readiness to users as a verdict plus named checks and blockers (`ReadinessWords`); the numeric index is an internal ordering aid only, because a score implies false precision.
 - Record a per-source privacy choice (`sources.processing_consent`, local-only by default) and refuse local-only sources inside the AI server handler, so the browser cannot leak a file the owner kept local.
 - Keep the readability floor in theme tokens and shared controls (13px secondary, 15px body, 44px targets, A4 print rules in `styles.css`) rather than per-component overrides.
+
+- Database writes from the browser go through `must()` (src/lib/seer/must.ts); a failed write throws SeerWriteError, which the root route toasts — so no success message follows a failed save.
+- Search logic lives in `src/lib/seer/search.ts` with an injected client and reports failed/truncated areas — so it is unit-testable and never shows "no matches" on a backend error.
