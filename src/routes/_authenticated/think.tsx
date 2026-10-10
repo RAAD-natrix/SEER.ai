@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ACCEPT } from "@/lib/seer/extract";
 import { deleteSource, uploadSource } from "@/lib/seer/sources";
-import { ConsentChoice, consentLabel, type Consent } from "@/components/seer/ConsentChoice";
+import { ConsentChoice, consentLabel, SourceConsentToggle, type Consent } from "@/components/seer/ConsentChoice";
 import { audit, uid, useStage } from "@/lib/seer/client";
 
 export const Route = createFileRoute("/_authenticated/think")({
@@ -71,6 +71,7 @@ function Think() {
   async function study() {
     if (!sel) return;
     if (sel.status === "EXTRACTION_FAILED" || sel.status === "NEEDS_VISUAL_REVIEW") { toast.error("No extracted text to study. This source needs visual review."); return; }
+    if (sel.processing_consent !== "ALLOWED_AI") { toast.error("This source is private and not sent to AI. Allow AI processing first to study it."); return; }
     const r = await run({ stage: "THINK_STUDY", sourceId: sel.id, extra: { classification: sel.classification } });
     if (!r) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -80,17 +81,20 @@ function Think() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cards: any[] = out.candidate_methods ?? [];
     const mem = sel.classification?.includes("STYLE") ? "STYLE" : sel.classification?.includes("TEMPLATE") ? "TEMPLATE" : sel.classification?.includes("CASE REFERENCE") ? "CASE_REFERENCE" : "METHOD";
+    let saved = 0;
     for (const c of cards) {
       const rule = { ...c, source_ids: [sel.id] };
       const scan = await fullScan(rule as never, run);
       const caseOnly = mem === "CASE_REFERENCE";
-      const { data: ins } = await supabase.from("method_rules").insert({
+      const { data: ins, error: insErr } = await supabase.from("method_rules").insert({
         owner_id: owner, name: c.name, memory_class: mem, problem_type: c.problem_type, mechanism: c.mechanism, why_useful: c.why_useful,
         prerequisites: c.prerequisites, use_when: c.use_when, do_not_use_when: c.do_not_use_when, counterexamples: c.counterexamples,
         required_evidence: c.required_evidence, falsifier: c.falsifier, source_ids: [sel.id], contamination: scan as never,
         status: caseOnly ? "CASE_ONLY" : scan.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW",
         confidentiality_scope: caseOnly ? "SOURCE_ONLY" : "GENERAL",
       }).select("id").single();
+      if (insErr || !ins) { toast.error(`Study saved, but only ${saved} of ${cards.length} candidate method(s) were recorded: ${insErr?.message ?? "unknown error"}`); sources.refetch(); methods.refetch(); return; }
+      saved++;
       await must(supabase.from("learning_events").insert({ owner_id: owner, source_id: sel.id, event_type: "METHOD_CANDIDATE", context: "THINK study", revised_proposition: c.mechanism, method_rule_id: ins?.id ?? null, scope: "CANDIDATE" }));
     }
     toast.success(`Study complete. ${cards.length} candidate method(s) for review.`);
@@ -137,10 +141,13 @@ function Think() {
                     <div className="seer-label mt-1">{sel.classification}</div>
                   </div>
                   <div className="flex gap-2">
-                    <Button onClick={study} disabled={!!busy}>{busy ? `Running ${busy}…` : review ? "Re-study" : "Study source"}</Button>
-                    <Button variant="ghost" onClick={async () => { if (!confirm("Delete source and retire methods derived from it?")) return; await deleteSource(sel.id); setSelected(null); sources.refetch(); }}>Delete</Button>
+                    <SourceConsentToggle sourceId={sel.id} consent={sel.processing_consent} onChanged={() => sources.refetch()} />
+                    <Button onClick={study} disabled={!!busy || sel.processing_consent !== "ALLOWED_AI"} aria-describedby={sel.processing_consent !== "ALLOWED_AI" ? "study-blocked" : undefined}>{busy ? `Running ${busy}…` : review ? "Re-study" : "Study source"}</Button>
+                    <Button variant="ghost" onClick={async () => { if (!confirm("Delete source and retire methods derived from it?")) return; try { await deleteSource(sel.id); toast.success("Source deleted."); setSelected(null); } catch (e) { toast.error(e instanceof Error ? e.message : "Not deleted."); } sources.refetch(); }}>Delete</Button>
                   </div>
                 </div>
+                <p className="mt-2 text-sm"><span className="seer-label">Privacy</span> {consentLabel(sel.processing_consent)}</p>
+                {sel.processing_consent !== "ALLOWED_AI" && <p id="study-blocked" role="status" className="mt-1 text-sm text-muted-foreground">Study is off because this source is private and not sent to AI. Choose “Allow AI processing” to let SEER study its text.</p>}
                 <CoverageLine c={sel.coverage} />
                 {sel.warnings?.length > 0 && <details className="mt-2 text-xs text-muted-foreground"><summary>Extraction warnings ({sel.warnings.length})</summary><ul className="list-disc pl-5">{sel.warnings.map((w, i) => <li key={i}>{w}</li>)}</ul></details>}
                 {sel.status !== "EXTRACTED" && sel.status !== "STUDIED" && <p className="mt-2 text-xs text-warning">This source is not fully extracted. SEER will not report it as fully studied.</p>}

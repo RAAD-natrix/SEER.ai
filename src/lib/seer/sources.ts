@@ -106,6 +106,7 @@ export async function signedUrl(path: string) {
 }
 
 export async function setSourceConsent(id: string, consent: "LOCAL_ONLY" | "ALLOWED_AI") {
-  const { error } = await supabase.from("sources").update({ processing_consent: consent }).eq("id", id);
+  const { data, error } = await supabase.from("sources").update({ processing_consent: consent }).eq("id", id).select("id");
   if (error) throw new Error(error.message);
+  if (!data?.length) throw new Error("You don't have permission to change this source.");
 }

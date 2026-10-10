@@ -50,7 +50,8 @@ function OpenMind() {
         content = text || `File: ${source.title} (${source.status})`;
       } catch (e) { toast.error(e instanceof Error ? e.message : "Upload failed"); return; }
     }
-    const { data: item } = await supabase.from("openmind_items").insert({ owner_id: owner, kind: file ? "EXTERNAL FACT OR SOURCE" : kind, title: title || null, content, url: url || null, source_id: sourceId, parent_id: parent?.id ?? null }).select("id").single();
+    const { data: item, error: itemErr } = await supabase.from("openmind_items").insert({ owner_id: owner, kind: file ? "EXTERNAL FACT OR SOURCE" : kind, title: title || null, content, url: url || null, source_id: sourceId, parent_id: parent?.id ?? null }).select("id").single();
+    if (itemErr || !item) { toast.error(`Not saved: ${itemErr?.message ?? "unknown error"}`); return; }
     setText(""); setTitle(""); setUrl(""); setFile(null);
     if (explore && item) {
       const r = await run({ stage: "OPEN_MIND_STUDY", ...(sourceId && aiSource ? { sourceId } : {}), text: `${parent ? `Branching from: ${parent.content}\n\n` : ""}${content}` });
@@ -72,9 +73,10 @@ function OpenMind() {
     const m = (r.output as any).candidate_method;
     const scan = await fullScan(m, run);
     const owner = await uid();
-    const { data } = await supabase.from("method_rules").insert({ owner_id: owner, ...m, memory_class: "METHOD", status: scan.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW", contamination: scan as never, tags: ["open-mind"] }).select("id").single();
-    await must(supabase.from("openmind_items").update({ method_rule_id: data?.id ?? null }).eq("id", i.id));
-    await must(supabase.from("learning_events").insert({ owner_id: owner, event_type: "METHOD_CANDIDATE", context: "Open Mind promotion", revised_proposition: m.mechanism, method_rule_id: data?.id ?? null, scope: "CANDIDATE" }));
+    const { data, error: ruleErr } = await supabase.from("method_rules").insert({ owner_id: owner, ...m, memory_class: "METHOD", status: scan.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW", contamination: scan as never, tags: ["open-mind"] }).select("id").single();
+    if (ruleErr || !data) { toast.error(`Method candidate not created: ${ruleErr?.message ?? "unknown error"}`); return; }
+    await must(supabase.from("openmind_items").update({ method_rule_id: data.id }).eq("id", i.id));
+    await must(supabase.from("learning_events").insert({ owner_id: owner, event_type: "METHOD_CANDIDATE", context: "Open Mind promotion", revised_proposition: m.mechanism, method_rule_id: data.id, scope: "CANDIDATE" }));
     toast.success(scan.blocked ? "Created but blocked by contamination scan — review in Memory." : "Method candidate created — review in Memory.");
     items.refetch();
   }
