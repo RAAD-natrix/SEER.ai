@@ -1,4 +1,4 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +16,7 @@ export const Route = createFileRoute("/_authenticated/work/$caseId/ask")({
 
 function AskIndexPage() {
   const { caseId } = Route.useParams();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const [busy, setBusy] = useState(false);
   const kase = useQuery({
