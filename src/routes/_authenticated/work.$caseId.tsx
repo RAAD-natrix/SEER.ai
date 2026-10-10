@@ -130,7 +130,7 @@ function BriefStage({ caseId, onSaved }: { caseId: string; onSaved: () => void }
     if (!shown) return;
     // The brief text and fields of a version are locked; answers are owner annotations on that version.
     await must(supabase.from("brief_versions").update({ answers: answers as never }).eq("id", shown.id));
-    await logAudit("BRIEF_ANSWERS_SAVED", "brief_versions", shown.id);
+    await audit("BRIEF_ANSWERS_SAVED", "brief_versions", shown.id);
     toast.success(`Answers saved to brief v${shown.version}. The brief text itself is unchanged.`);
     versions.refetch();
   }
