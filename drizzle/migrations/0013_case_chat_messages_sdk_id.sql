@@ -1,0 +1,2 @@
+alter table public.case_chat_messages add column if not exists sdk_id text;
+create unique index if not exists case_chat_messages_sdk_id_idx on public.case_chat_messages(thread_id, sdk_id) where sdk_id is not null;

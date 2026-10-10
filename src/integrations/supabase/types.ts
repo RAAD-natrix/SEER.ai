@@ -175,6 +175,79 @@ export type Database = {
           },
         ]
       }
+      case_chat_messages: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          parts: Json
+          role: string
+          sdk_id: string | null
+          thread_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          parts?: Json
+          role: string
+          sdk_id?: string | null
+          thread_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          parts?: Json
+          role?: string
+          sdk_id?: string | null
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_chat_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "case_chat_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      case_chat_threads: {
+        Row: {
+          case_id: string
+          created_at: string
+          id: string
+          owner_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          case_id: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          case_id?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "case_chat_threads_case_id_fkey"
+            columns: ["case_id"]
+            isOneToOne: false
+            referencedRelation: "cases"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       cases: {
         Row: {
           active_path_id: string | null

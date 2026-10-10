@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -36,12 +36,15 @@ const FIELDS: [string, string][] = [
 
 function CasePage() {
   const { caseId } = Route.useParams();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const isChildRoute = pathname !== `/work/${caseId}`;
   const [step, setStep] = useState<(typeof STEPS)[number]>("OVERVIEW");
   const kase = useQuery({
     queryKey: ["case", caseId],
     queryFn: async () => (await supabase.from("cases").select("*").eq("id", caseId).single()).data,
   });
   const c = kase.data;
+  if (isChildRoute) return <Outlet />;
   return (
     <AppShell>
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
@@ -50,6 +53,7 @@ function CasePage() {
         </div>
         <div className="flex items-center gap-2 text-xs text-muted-foreground">
           <StatusTag s={c?.status ?? "ACTIVE"} /> Last saved {c ? new Date(c.updated_at).toLocaleString("en-GB") : "—"}
+          <Link to="/work/$caseId/ask" params={{ caseId }} className="rounded border border-primary px-2 py-1 font-mono text-xs tracking-wider text-primary">ASK SEER</Link>
         </div>
       </div>
       <WorkbenchIdentity area="WORK" title={c?.title ?? "Case"} />

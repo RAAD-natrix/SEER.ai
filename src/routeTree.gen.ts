@@ -24,9 +24,12 @@ import { Route as AuthenticatedSearchRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedThinkRouteImport } from './routes/_authenticated/think'
 import { Route as AuthenticatedWorkRouteImport } from './routes/_authenticated/work'
+import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as AuthenticatedDeliverableOutputIdRouteImport } from './routes/_authenticated/deliverable.$outputId'
 import { Route as AuthenticatedWorkCaseIdRouteImport } from './routes/_authenticated/work.$caseId'
+import { Route as AuthenticatedWorkCaseIdAskRouteImport } from './routes/_authenticated/work.$caseId.ask'
+import { Route as AuthenticatedWorkCaseIdAskThreadIdRouteImport } from './routes/_authenticated/work.$caseId.ask.$threadId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -104,6 +107,11 @@ const AuthenticatedWorkRoute = AuthenticatedWorkRouteImport.update({
   path: '/work',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const ApiChatRoute = ApiChatRouteImport.update({
+  id: '/api/chat',
+  path: '/api/chat',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DotlovableOauthConsentRoute = DotlovableOauthConsentRouteImport.update({
   id: '/.lovable/oauth/consent',
   path: '/.lovable/oauth/consent',
@@ -120,6 +128,18 @@ const AuthenticatedWorkCaseIdRoute = AuthenticatedWorkCaseIdRouteImport.update({
   path: '/$caseId',
   getParentRoute: () => AuthenticatedWorkRoute,
 } as any)
+const AuthenticatedWorkCaseIdAskRoute =
+  AuthenticatedWorkCaseIdAskRouteImport.update({
+    id: '/ask',
+    path: '/ask',
+    getParentRoute: () => AuthenticatedWorkCaseIdRoute,
+  } as any)
+const AuthenticatedWorkCaseIdAskThreadIdRoute =
+  AuthenticatedWorkCaseIdAskThreadIdRouteImport.update({
+    id: '/$threadId',
+    path: '/$threadId',
+    getParentRoute: () => AuthenticatedWorkCaseIdAskRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -136,9 +156,12 @@ export interface FileRoutesByFullPath {
   '/settings': typeof AuthenticatedSettingsRoute
   '/think': typeof AuthenticatedThinkRoute
   '/work': typeof AuthenticatedWorkRouteWithChildren
+  '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
-  '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
+  '/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
+  '/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRouteWithChildren
+  '/work/$caseId/ask/$threadId': typeof AuthenticatedWorkCaseIdAskThreadIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -155,9 +178,12 @@ export interface FileRoutesByTo {
   '/settings': typeof AuthenticatedSettingsRoute
   '/think': typeof AuthenticatedThinkRoute
   '/work': typeof AuthenticatedWorkRouteWithChildren
+  '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
-  '/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
+  '/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
+  '/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRouteWithChildren
+  '/work/$caseId/ask/$threadId': typeof AuthenticatedWorkCaseIdAskThreadIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -176,9 +202,12 @@ export interface FileRoutesById {
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/think': typeof AuthenticatedThinkRoute
   '/_authenticated/work': typeof AuthenticatedWorkRouteWithChildren
+  '/api/chat': typeof ApiChatRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
-  '/_authenticated/work/$caseId': typeof AuthenticatedWorkCaseIdRoute
+  '/_authenticated/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
+  '/_authenticated/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRouteWithChildren
+  '/_authenticated/work/$caseId/ask/$threadId': typeof AuthenticatedWorkCaseIdAskThreadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -197,9 +226,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/think'
     | '/work'
+    | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/deliverable/$outputId'
     | '/work/$caseId'
+    | '/work/$caseId/ask'
+    | '/work/$caseId/ask/$threadId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -216,9 +248,12 @@ export interface FileRouteTypes {
     | '/settings'
     | '/think'
     | '/work'
+    | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/deliverable/$outputId'
     | '/work/$caseId'
+    | '/work/$caseId/ask'
+    | '/work/$caseId/ask/$threadId'
   id:
     | '__root__'
     | '/'
@@ -236,9 +271,12 @@ export interface FileRouteTypes {
     | '/_authenticated/settings'
     | '/_authenticated/think'
     | '/_authenticated/work'
+    | '/api/chat'
     | '/.lovable/oauth/consent'
     | '/_authenticated/deliverable/$outputId'
     | '/_authenticated/work/$caseId'
+    | '/_authenticated/work/$caseId/ask'
+    | '/_authenticated/work/$caseId/ask/$threadId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -248,6 +286,7 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  ApiChatRoute: typeof ApiChatRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
 }
 
@@ -358,6 +397,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/chat': {
+      id: '/api/chat'
+      path: '/api/chat'
+      fullPath: '/api/chat'
+      preLoaderRoute: typeof ApiChatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/.lovable/oauth/consent': {
       id: '/.lovable/oauth/consent'
       path: '/.lovable/oauth/consent'
@@ -379,15 +425,59 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkCaseIdRouteImport
       parentRoute: typeof AuthenticatedWorkRoute
     }
+    '/_authenticated/work/$caseId/ask': {
+      id: '/_authenticated/work/$caseId/ask'
+      path: '/ask'
+      fullPath: '/work/$caseId/ask'
+      preLoaderRoute: typeof AuthenticatedWorkCaseIdAskRouteImport
+      parentRoute: typeof AuthenticatedWorkCaseIdRoute
+    }
+    '/_authenticated/work/$caseId/ask/$threadId': {
+      id: '/_authenticated/work/$caseId/ask/$threadId'
+      path: '/$threadId'
+      fullPath: '/work/$caseId/ask/$threadId'
+      preLoaderRoute: typeof AuthenticatedWorkCaseIdAskThreadIdRouteImport
+      parentRoute: typeof AuthenticatedWorkCaseIdAskRoute
+    }
   }
 }
 
+interface AuthenticatedWorkCaseIdAskRouteChildren {
+  AuthenticatedWorkCaseIdAskThreadIdRoute: typeof AuthenticatedWorkCaseIdAskThreadIdRoute
+}
+
+const AuthenticatedWorkCaseIdAskRouteChildren: AuthenticatedWorkCaseIdAskRouteChildren =
+  {
+    AuthenticatedWorkCaseIdAskThreadIdRoute:
+      AuthenticatedWorkCaseIdAskThreadIdRoute,
+  }
+
+const AuthenticatedWorkCaseIdAskRouteWithChildren =
+  AuthenticatedWorkCaseIdAskRoute._addFileChildren(
+    AuthenticatedWorkCaseIdAskRouteChildren,
+  )
+
+interface AuthenticatedWorkCaseIdRouteChildren {
+  AuthenticatedWorkCaseIdAskRoute: typeof AuthenticatedWorkCaseIdAskRouteWithChildren
+}
+
+const AuthenticatedWorkCaseIdRouteChildren: AuthenticatedWorkCaseIdRouteChildren =
+  {
+    AuthenticatedWorkCaseIdAskRoute:
+      AuthenticatedWorkCaseIdAskRouteWithChildren,
+  }
+
+const AuthenticatedWorkCaseIdRouteWithChildren =
+  AuthenticatedWorkCaseIdRoute._addFileChildren(
+    AuthenticatedWorkCaseIdRouteChildren,
+  )
+
 interface AuthenticatedWorkRouteChildren {
-  AuthenticatedWorkCaseIdRoute: typeof AuthenticatedWorkCaseIdRoute
+  AuthenticatedWorkCaseIdRoute: typeof AuthenticatedWorkCaseIdRouteWithChildren
 }
 
 const AuthenticatedWorkRouteChildren: AuthenticatedWorkRouteChildren = {
-  AuthenticatedWorkCaseIdRoute: AuthenticatedWorkCaseIdRoute,
+  AuthenticatedWorkCaseIdRoute: AuthenticatedWorkCaseIdRouteWithChildren,
 }
 
 const AuthenticatedWorkRouteWithChildren =
@@ -430,6 +520,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  ApiChatRoute: ApiChatRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
 }
 export const routeTree = rootRouteImport

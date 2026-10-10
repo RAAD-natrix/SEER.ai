@@ -85,6 +85,20 @@
       "when": 1791537277800,
       "tag": "0011_source_processing_consent",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1791630165628,
+      "tag": "0012_case_chat_threads_and_messages",
+      "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1791630223748,
+      "tag": "0013_case_chat_messages_sdk_id",
+      "breakpoints": true
     }
   ]
 }
