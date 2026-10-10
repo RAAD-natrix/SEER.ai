@@ -21,7 +21,7 @@ export function endOfDay(d: string) {
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Db = { from: (t: string) => any };
-type Row = Record<string, any>;
+type Row = any;
 
 export async function runSearch(db: Db, f: SearchFilters): Promise<SearchResult> {
   const q = sanitizeQuery(f.q);
