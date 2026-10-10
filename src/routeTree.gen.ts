@@ -29,6 +29,7 @@ import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.
 import { Route as AuthenticatedDeliverableOutputIdRouteImport } from './routes/_authenticated/deliverable.$outputId'
 import { Route as AuthenticatedWorkCaseIdRouteImport } from './routes/_authenticated/work.$caseId'
 import { Route as AuthenticatedWorkCaseIdAskRouteImport } from './routes/_authenticated/work.$caseId.ask'
+import { Route as AuthenticatedWorkCaseIdAskThreadIdRouteImport } from './routes/_authenticated/work.$caseId.ask.$threadId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -133,6 +134,12 @@ const AuthenticatedWorkCaseIdAskRoute =
     path: '/ask',
     getParentRoute: () => AuthenticatedWorkCaseIdRoute,
   } as any)
+const AuthenticatedWorkCaseIdAskThreadIdRoute =
+  AuthenticatedWorkCaseIdAskThreadIdRouteImport.update({
+    id: '/$threadId',
+    path: '/$threadId',
+    getParentRoute: () => AuthenticatedWorkCaseIdAskRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -153,7 +160,8 @@ export interface FileRoutesByFullPath {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
-  '/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRoute
+  '/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRouteWithChildren
+  '/work/$caseId/ask/$threadId': typeof AuthenticatedWorkCaseIdAskThreadIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -174,7 +182,8 @@ export interface FileRoutesByTo {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
-  '/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRoute
+  '/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRouteWithChildren
+  '/work/$caseId/ask/$threadId': typeof AuthenticatedWorkCaseIdAskThreadIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -197,7 +206,8 @@ export interface FileRoutesById {
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/_authenticated/deliverable/$outputId': typeof AuthenticatedDeliverableOutputIdRoute
   '/_authenticated/work/$caseId': typeof AuthenticatedWorkCaseIdRouteWithChildren
-  '/_authenticated/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRoute
+  '/_authenticated/work/$caseId/ask': typeof AuthenticatedWorkCaseIdAskRouteWithChildren
+  '/_authenticated/work/$caseId/ask/$threadId': typeof AuthenticatedWorkCaseIdAskThreadIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -221,6 +231,7 @@ export interface FileRouteTypes {
     | '/deliverable/$outputId'
     | '/work/$caseId'
     | '/work/$caseId/ask'
+    | '/work/$caseId/ask/$threadId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -242,6 +253,7 @@ export interface FileRouteTypes {
     | '/deliverable/$outputId'
     | '/work/$caseId'
     | '/work/$caseId/ask'
+    | '/work/$caseId/ask/$threadId'
   id:
     | '__root__'
     | '/'
@@ -264,6 +276,7 @@ export interface FileRouteTypes {
     | '/_authenticated/deliverable/$outputId'
     | '/_authenticated/work/$caseId'
     | '/_authenticated/work/$caseId/ask'
+    | '/_authenticated/work/$caseId/ask/$threadId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -419,16 +432,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedWorkCaseIdAskRouteImport
       parentRoute: typeof AuthenticatedWorkCaseIdRoute
     }
+    '/_authenticated/work/$caseId/ask/$threadId': {
+      id: '/_authenticated/work/$caseId/ask/$threadId'
+      path: '/$threadId'
+      fullPath: '/work/$caseId/ask/$threadId'
+      preLoaderRoute: typeof AuthenticatedWorkCaseIdAskThreadIdRouteImport
+      parentRoute: typeof AuthenticatedWorkCaseIdAskRoute
+    }
   }
 }
 
+interface AuthenticatedWorkCaseIdAskRouteChildren {
+  AuthenticatedWorkCaseIdAskThreadIdRoute: typeof AuthenticatedWorkCaseIdAskThreadIdRoute
+}
+
+const AuthenticatedWorkCaseIdAskRouteChildren: AuthenticatedWorkCaseIdAskRouteChildren =
+  {
+    AuthenticatedWorkCaseIdAskThreadIdRoute:
+      AuthenticatedWorkCaseIdAskThreadIdRoute,
+  }
+
+const AuthenticatedWorkCaseIdAskRouteWithChildren =
+  AuthenticatedWorkCaseIdAskRoute._addFileChildren(
+    AuthenticatedWorkCaseIdAskRouteChildren,
+  )
+
 interface AuthenticatedWorkCaseIdRouteChildren {
-  AuthenticatedWorkCaseIdAskRoute: typeof AuthenticatedWorkCaseIdAskRoute
+  AuthenticatedWorkCaseIdAskRoute: typeof AuthenticatedWorkCaseIdAskRouteWithChildren
 }
 
 const AuthenticatedWorkCaseIdRouteChildren: AuthenticatedWorkCaseIdRouteChildren =
   {
-    AuthenticatedWorkCaseIdAskRoute: AuthenticatedWorkCaseIdAskRoute,
+    AuthenticatedWorkCaseIdAskRoute:
+      AuthenticatedWorkCaseIdAskRouteWithChildren,
   }
 
 const AuthenticatedWorkCaseIdRouteWithChildren =
