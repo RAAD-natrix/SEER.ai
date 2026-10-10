@@ -10,6 +10,7 @@ import {
 } from "@tanstack/react-router";
 import { useEffect, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 import appCss from "../styles.css?url";
@@ -110,7 +111,13 @@ function RootComponent() {
     if ("serviceWorker" in navigator && window.self === window.top && !location.hostname.includes("id-preview")) {
       navigator.serviceWorker.register("/sw.js").catch(() => {});
     }
-    return () => data.subscription.unsubscribe();
+    // A failed save throws SeerWriteError from must(); surface it instead of failing silently.
+    const onReject = (e: PromiseRejectionEvent) => {
+      const err = e.reason as { name?: string; message?: string } | undefined;
+      if (err?.name === "SeerWriteError") { e.preventDefault(); toast.error(err.message ?? "Not saved."); }
+    };
+    window.addEventListener("unhandledrejection", onReject);
+    return () => { data.subscription.unsubscribe(); window.removeEventListener("unhandledrejection", onReject); };
   }, [router, queryClient]);
   return (
     <QueryClientProvider client={queryClient}>

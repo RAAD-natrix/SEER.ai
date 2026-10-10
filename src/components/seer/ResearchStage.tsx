@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -57,17 +58,17 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
       if (!r) return;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const o = r.output as any;
-      await supabase.from("sources").update({ delta: o, reliability_notes: o.reliability_notes }).eq("id", src.id);
+      await must(supabase.from("sources").update({ delta: o, reliability_notes: o.reliability_notes }).eq("id", src.id));
       const owner = await uid();
       if (o.evidence?.length) {
-        await supabase.from("evidence_items").insert(o.evidence.map((e: Record<string, unknown>) => ({
+        await must(supabase.from("evidence_items").insert(o.evidence.map((e: Record<string, unknown>) => ({
           owner_id: owner, case_id: caseId, statement: String(e["statement"]), source_id: src.id, source_label: src.title, source_type: src.source_type,
           classification: String(e["classification"]), direction: String(e["direction"]),
           strength: Math.round(Math.min(5, Math.max(1, Number(e["strength"]) || 3))),
           reliability: Math.min(0.95, Math.max(0.2, Number(e["reliability"]) || 0.5)),
           independence: Math.min(1, Math.max(0.25, Number(e["independence"]) || 1)),
           limitation: String(e["limitation"] ?? ""), path_ids: pathIds,
-        })));
+        }))));
       }
       if (route === "B") await createPath(o.suggested_path_title || src.title, o.suggested_path_thesis || "", src.id);
       toast.success("Research delta ready.");
@@ -81,8 +82,8 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
     const owner = await uid();
     const { data } = await supabase.from("thought_paths").insert({ owner_id: owner, case_id: caseId, title: t, thesis }).select("id").single();
     if (data) {
-      await supabase.from("sources").update({ path_ids: [...(s?.path_ids ?? []), data.id] }).eq("id", sourceId);
-      await supabase.from("cases").update({ active_path_id: data.id }).eq("id", caseId);
+      await must(supabase.from("sources").update({ path_ids: [...(s?.path_ids ?? []), data.id] }).eq("id", sourceId));
+      await must(supabase.from("cases").update({ active_path_id: data.id }).eq("id", caseId));
       toast.success("New thought path created.");
       paths.refetch();
     }
@@ -155,7 +156,7 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
                     <p className="text-sm text-muted-foreground">{d.suggested_path_thesis}</p>
                     <div className="mt-2 flex gap-2">
                       <Button size="sm" onClick={() => createPath(d.suggested_path_title, d.suggested_path_thesis, s.id)}>Create path</Button>
-                      <Button size="sm" variant="ghost" onClick={async () => { await supabase.from("sources").update({ delta: { ...d, justifies_new_path: false, suggestion_rejected: true } }).eq("id", s.id); sources.refetch(); }}>Reject suggestion</Button>
+                      <Button size="sm" variant="ghost" onClick={async () => { await must(supabase.from("sources").update({ delta: { ...d, justifies_new_path: false, suggestion_rejected: true } }).eq("id", s.id)); sources.refetch(); }}>Reject suggestion</Button>
                     </div>
                   </div>
                 )}

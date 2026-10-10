@@ -1,7 +1,10 @@
 # Roadmap
 
-## In progress
-- Ask SEER: threaded per-case AI chat (threads + messages tables done; chat.server.ts, chat.functions.ts, /api/chat route done). Remaining: thread list page, chat page, link from case page, verify build + live test.
+## Done
+- Ask SEER: threaded per-case chat (pages, stream route, saved history, delete with confirmation, chat sends count toward the AI limit).
+- QA sweep (Oct 2026): search reports failed areas, pages through all versions, owner/date filters server-side; every save checks for failure; brief text locked in the database.
 
 ## Open
-- Delete feature: delete sources/files, cases, and brief versions (user request). Needs soft-delete for cases (deleted_at exists), hard or soft delete for brief_versions (immutable — check 0004_keep_versions_immutable trigger before deleting), sources already have deleted_at.
+- Delete feature: delete sources/files, cases, and brief versions (user request). Brief versions are immutable by trigger — needs a deliberate design.
+- Live checks pending: Ask SEER stop/retry and 429 path, uploads per file format, second-analyst isolation, PDF button click, long-brief exports.
+- Lint: repository-wide formatting (prettier) errors pre-date this sweep; `bun run check` does not include lint.

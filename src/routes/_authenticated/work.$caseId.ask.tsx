@@ -40,6 +40,7 @@ function AskIndexPage() {
   }
 
   async function removeThread(threadId: string) {
+    if (!window.confirm("Delete this conversation and all its messages? This cannot be undone.")) return;
     try {
       await deleteChatThread({ data: { threadId } });
       toast.success("Conversation deleted.");

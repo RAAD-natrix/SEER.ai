@@ -111,8 +111,13 @@ export async function handleAskSeerChat(request: Request): Promise<Response> {
 
   // Rate limit: 20 AI runs per user per minute (shared with stage runs).
   const since = new Date(Date.now() - 60_000).toISOString();
-  const { count } = await sb.from("ai_runs").select("id", { count: "exact", head: true }).eq("owner_id", uid).gte("started_at", since);
-  if ((count ?? 0) >= 20) return jsonError(429, "AI rate limit reached. Please wait a minute and try again.");
+  // Chat turns do not create ai_runs rows, so count this user's chat sends as well.
+  const [runs, chats] = await Promise.all([
+    sb.from("ai_runs").select("id", { count: "exact", head: true }).eq("owner_id", uid).gte("started_at", since),
+    sb.from("case_chat_messages").select("id", { count: "exact", head: true }).eq("owner_id", uid).eq("role", "user").gte("created_at", since),
+  ]);
+  if (runs.error || chats.error) return jsonError(503, "Could not check your AI usage. Please retry.");
+  if (chatRateExceeded(runs.count, chats.count)) return jsonError(429, "AI rate limit reached. Please wait a minute and try again.");
 
   let ctx: unknown;
   try {
@@ -142,7 +147,8 @@ export async function handleAskSeerChat(request: Request): Promise<Response> {
       // Title the thread from its first user message.
       const firstText = lastUser.parts.find((p) => p.type === "text");
       if (firstText && "text" in firstText) {
-        await sb.from("case_chat_threads").update({ title: clip(firstText.text, 60) || "New conversation", updated_at: new Date().toISOString() }).eq("id", threadId);
+        const { error: tErr } = await sb.from("case_chat_threads").update({ title: clip(firstText.text, 60) || "New conversation", updated_at: new Date().toISOString() }).eq("id", threadId);
+        if (tErr) console.error("Ask SEER: thread title not saved");
       }
     }
   }
@@ -202,4 +208,10 @@ export async function handleAskSeerChat(request: Request): Promise<Response> {
       await sb.from("case_chat_threads").update({ updated_at: new Date().toISOString() }).eq("id", threadId);
     },
   });
+}
+
+export const CHAT_RATE_LIMIT = 20;
+/** Shared per-minute AI budget across stage runs and chat sends. */
+export function chatRateExceeded(runs: number | null, chats: number | null) {
+  return (runs ?? 0) + (chats ?? 0) >= CHAT_RATE_LIMIT;
 }

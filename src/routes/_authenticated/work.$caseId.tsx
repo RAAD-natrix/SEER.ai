@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { createFileRoute, Link, Outlet, useRouterState } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
@@ -59,7 +60,7 @@ function CasePage() {
       <WorkbenchIdentity area="WORK" title={c?.title ?? "Case"} />
       <nav aria-label="Workflow" className="mb-6 grid grid-cols-5 gap-1">
         {STEPS.map((s, i) => (
-          <button key={s} onClick={() => { setStep(s); if (c && s !== "OVERVIEW" && c.stage !== s) supabase.from("cases").update({ stage: s }).eq("id", caseId).then(() => kase.refetch()); }} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>
+          <button key={s} onClick={() => { setStep(s); if (c && s !== "OVERVIEW" && c.stage !== s) void must(supabase.from("cases").update({ stage: s }).eq("id", caseId)).then(() => kase.refetch()); }} className={`rounded border px-2 py-2 font-mono text-xs tracking-wider ${step === s ? "border-primary text-primary" : "text-muted-foreground"}`}>
             {i === 0 ? "◆" : i} {s}
           </button>
         ))}
@@ -71,7 +72,7 @@ function CasePage() {
       ) : step === "RESEARCH" ? (
         <ResearchStage caseId={caseId} activePathId={c?.active_path_id ?? null} />
       ) : step === "SANDBOX" ? (
-        <SandboxStage caseId={caseId} activePathId={c?.active_path_id ?? null} onActive={async (id) => { await supabase.from("cases").update({ active_path_id: id }).eq("id", caseId); kase.refetch(); }} />
+        <SandboxStage caseId={caseId} activePathId={c?.active_path_id ?? null} onActive={async (id) => { await must(supabase.from("cases").update({ active_path_id: id }).eq("id", caseId)); kase.refetch(); }} />
       ) : (
         <OutcomesStage caseId={caseId} />
       )}
@@ -107,7 +108,7 @@ function BriefStage({ caseId, onSaved }: { caseId: string; onSaved: () => void }
     // Never overwrite: every save is a new immutable version.
     const { data, error } = await supabase.from("brief_versions").insert({ owner_id: owner, case_id: caseId, version: next, raw_brief: raw, fields: fields as never, answers: answers as never }).select("id").single();
     if (error) { toast.error(error.message); return null; }
-    await supabase.from("cases").update({ fields: fields as never }).eq("id", caseId);
+    await must(supabase.from("cases").update({ fields: fields as never }).eq("id", caseId));
     await audit("BRIEF_VERSION_SAVED", "brief_version", data.id, { version: next });
     await versions.refetch();
     setViewV(null);
@@ -120,15 +121,17 @@ function BriefStage({ caseId, onSaved }: { caseId: string; onSaved: () => void }
     if (!id) return;
     const r = await run({ stage: "BRIEF_TRIAGE", caseId });
     if (!r) return;
-    await supabase.from("brief_versions").update({ triage: { ...r.output, _run_id: r.runId, _model: r.model } as never }).eq("id", id);
+    await must(supabase.from("brief_versions").update({ triage: { ...r.output, _run_id: r.runId, _model: r.model } as never }).eq("id", id));
     toast.success("Initial analysis complete.");
     versions.refetch();
   }
 
   async function saveAnswers() {
     if (!shown) return;
-    await supabase.from("brief_versions").update({ answers: answers as never }).eq("id", shown.id);
-    toast.success("Answers saved to this brief version.");
+    // The brief text and fields of a version are locked; answers are owner annotations on that version.
+    await must(supabase.from("brief_versions").update({ answers: answers as never }).eq("id", shown.id));
+    await audit("BRIEF_ANSWERS_SAVED", "brief_versions", shown.id);
+    toast.success(`Answers saved to brief v${shown.version}. The brief text itself is unchanged.`);
     versions.refetch();
   }
 

@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -53,7 +54,7 @@ function Memory() {
                 <td className="pr-2 text-xs">{e.context}</td>
                 <td className="pr-2">{e.revised_proposition}{e.owner_response && <div className="text-xs text-muted-foreground">Owner: {e.owner_response}</div>}</td>
                 <td className="pr-2 font-mono text-xs">{e.scope}</td>
-                <td>{e.confirmed ? "yes" : <button className="text-xs underline" onClick={async () => { await supabase.from("learning_events").update({ confirmed: true }).eq("id", e.id); events.refetch(); }}>confirm</button>}</td>
+                <td>{e.confirmed ? "yes" : <button className="text-xs underline" onClick={async () => { await must(supabase.from("learning_events").update({ confirmed: true }).eq("id", e.id)); events.refetch(); }}>confirm</button>}</td>
               </tr>
             ))}</tbody>
           </table>

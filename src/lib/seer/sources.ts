@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { supabase } from "@/integrations/supabase/client";
 import { audit, uid } from "./client";
 import { extractFile, sanitiseFilename, sha256, validateFile } from "./extract";
@@ -61,10 +62,10 @@ export async function createTextSource(text: string, opts: { area: "think" | "re
 export async function deleteSource(id: string) {
   const { data: s } = await supabase.from("sources").select("storage_path").eq("id", id).single();
   if (s?.storage_path) await supabase.storage.from("sources").remove([s.storage_path]);
-  await supabase.from("sources").update({ deleted_at: new Date().toISOString(), extracted_text: null, storage_path: null, review: null }).eq("id", id);
+  await must(supabase.from("sources").update({ deleted_at: new Date().toISOString(), extracted_text: null, storage_path: null, review: null }).eq("id", id));
   // Conservative: retire any method derived from this source so it no longer informs future work.
   const { data: rules } = await supabase.from("method_rules").select("id").contains("source_ids", [id]);
-  if (rules?.length) await supabase.from("method_rules").update({ status: "RETIRED" }).in("id", rules.map((r) => r.id));
+  if (rules?.length) await must(supabase.from("method_rules").update({ status: "RETIRED" }).in("id", rules.map((r) => r.id)));
   await audit("SOURCE_DELETED", "source", id, { retired_methods: rules?.length ?? 0 });
 }
 
