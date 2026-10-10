@@ -14,6 +14,16 @@ import { uploadSource } from "@/lib/seer/sources";
 import { ConsentChoice, type Consent } from "@/components/seer/ConsentChoice";
 import { audit, uid, useStage } from "@/lib/seer/client";
 import type { Tables } from "@/integrations/supabase/types";
+import { gateOpenMindAI, provenanceChain, sourceIdsOf, type GateResult, type OmItem } from "@/lib/seer/openmindPrivacy";
+
+/** Resolve current consent for every source behind these items, under the user's access rules. */
+async function checkProvenance(chain: OmItem[] | null, newFileConsent?: string | null): Promise<GateResult> {
+  const ids = chain ? sourceIdsOf(chain) : [];
+  if (!ids.length) return gateOpenMindAI(chain, [], newFileConsent);
+  const { data, error } = await supabase.from("sources").select("id,processing_consent,deleted_at").in("id", ids);
+  if (error) return { ok: false, reason: "SEER could not check this item's privacy, so nothing was sent to AI. Please retry." };
+  return gateOpenMindAI(chain, data ?? [], newFileConsent);
+}
 
 export const Route = createFileRoute("/_authenticated/openmind")({
   head: () => ({ meta: [{ title: "Open Mind — SEER.ai" }, { name: "description", content: "Explore ideas not yet attached to a job." }, { property: "og:title", content: "Open Mind — SEER.ai" }, { property: "og:description", content: "Explore ideas not yet attached to a job." }, { property: "og:type", content: "website" }, { name: "twitter:card", content: "summary" }] }),
@@ -40,33 +50,41 @@ function OpenMind() {
     if (!text.trim() && !file) return;
     const owner = await uid();
     let sourceId: string | null = null;
-    let aiSource = false;
+    let fileConsent: string | null | undefined = undefined;
     let content = text;
     if (file) {
       try {
         const { source } = await uploadSource(file, { area: "openmind", title: title || file.name, consent });
         sourceId = source.id;
-        aiSource = source.processing_consent === "ALLOWED_AI";
+        fileConsent = source.processing_consent;
         content = text || `File: ${source.title} (${source.status})`;
       } catch (e) { toast.error(e instanceof Error ? e.message : "Upload failed"); return; }
     }
     const { data: item, error: itemErr } = await supabase.from("openmind_items").insert({ owner_id: owner, kind: file ? "EXTERNAL FACT OR SOURCE" : kind, title: title || null, content, url: url || null, source_id: sourceId, parent_id: parent?.id ?? null }).select("id").single();
     if (itemErr || !item) { toast.error(`Not saved: ${itemErr?.message ?? "unknown error"}`); return; }
-    setText(""); setTitle(""); setUrl(""); setFile(null);
-    if (explore && item) {
-      const r = await run({ stage: "OPEN_MIND_STUDY", ...(sourceId && aiSource ? { sourceId } : {}), text: `${parent ? `Branching from: ${parent.content}\n\n` : ""}${content}` });
-      if (r) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const o = r.output as any;
-        setReply(o.reply);
-        if (o.items?.length) await must(supabase.from("openmind_items").insert(o.items.map((i: { kind: string; text: string }) => ({ owner_id: owner, kind: i.kind, content: i.text, parent_id: item.id }))));
-      }
+    const branchFrom = parent;
+    setText(""); setTitle(""); setUrl(""); setFile(null); setParent(null);
+    items.refetch();
+    if (!explore) { toast.success("Saved."); return; }
+    // Privacy gate: the new file and every ancestor's source must allow AI before anything is sent.
+    const chain = branchFrom ? provenanceChain(branchFrom, items.data ?? []) : [];
+    const gate = await checkProvenance(chain, fileConsent);
+    if (!gate.ok) { toast.warning(gate.reason, { duration: 10000 }); return; }
+    const r = await run({ stage: "OPEN_MIND_STUDY", ...(sourceId ? { sourceId } : {}), text: `${branchFrom ? `Branching from: ${branchFrom.content}\n\n` : ""}${content}` });
+    if (!r) { toast.error("Saved, but SEER could not explore it."); return; }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const o = r.output as any;
+    setReply(o.reply);
+    if (o.items?.length) {
+      const { error } = await supabase.from("openmind_items").insert(o.items.map((i: { kind: string; text: string }) => ({ owner_id: owner, kind: i.kind, content: i.text, parent_id: item.id })));
+      if (error) toast.error(`SEER replied, but its follow-up items were not saved: ${error.message}`);
     }
-    setParent(null);
     items.refetch();
   }
 
   async function promote(i: Tables<"openmind_items">) {
+    const gate = await checkProvenance(provenanceChain(i, items.data ?? []));
+    if (!gate.ok) { toast.warning(gate.reason, { duration: 10000 }); return; }
     const r = await run({ stage: "LEARNING_EXTRACT", text: `Owner wants to promote this Open Mind insight into a generic method candidate. Insight: ${i.content}` });
     if (!r) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -125,8 +143,8 @@ function OpenMind() {
             <Input type="file" accept={ACCEPT} aria-label="File" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
             {file && <ConsentChoice name="openmind-consent" value={consent} onChange={setConsent} />}
             <select aria-label="Kind" className="min-h-11 w-full rounded-md border bg-background px-2 text-sm" value={kind} onChange={(e) => setKind(e.target.value)}>{KINDS.map((k) => <option key={k}>{k}</option>)}</select>
-            <div className="flex gap-2"><Button onClick={() => add(true)} disabled={!!busy}>{busy ? "Exploring…" : "Save & explore with SEER"}</Button><Button variant="outline" onClick={() => add(false)}>Save only</Button></div>
-            <p className="text-xs text-muted-foreground">External research is not a personal method. Items stay out of cases unless marked reusable or moved.</p>
+            <div className="flex gap-2"><Button onClick={() => add(true)} disabled={!!busy}>{busy ? "Exploring…" : file ? "Save & explore with SEER (needs AI processing allowed)" : "Save & send this text to AI to explore"}</Button><Button variant="outline" onClick={() => add(false)}>Save only</Button></div>
+            <p className="text-xs text-muted-foreground">Exploring sends the typed text (and any branch it builds on) to the AI model. Private files and anything derived from them are never sent. External research is not a personal method. Items stay out of cases unless marked reusable or moved.</p>
           </div>
           {reply && <div className="seer-panel p-4 text-sm"><div className="seer-label mb-1">SEER</div><p className="whitespace-pre-wrap">{reply}</p></div>}
         </div>
