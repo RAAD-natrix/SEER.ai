@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ACCEPT } from "@/lib/seer/extract";
 import { createTextSource, deleteSource, setSourceConsent, uploadSource } from "@/lib/seer/sources";
-import { ConsentChoice, consentLabel, type Consent } from "./ConsentChoice";
+import { ConsentChoice, consentLabel, SourceConsentToggle, type Consent } from "./ConsentChoice";
 import { exportCsv } from "@/lib/seer/export";
 import { uid, useStage } from "@/lib/seer/client";
 
@@ -53,12 +53,13 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
       await sources.refetch();
       setSel(src.id);
       if (!src.extracted_text) { toast.warning("Stored, but no text could be extracted for analysis."); return; }
-      if (src.processing_consent !== "ALLOWED_AI") { toast.success("Saved as Local only. It was not sent to the AI; allow AI processing on the source to analyse it."); return; }
+      if (src.processing_consent !== "ALLOWED_AI") { toast.success("Saved privately in SEER. It was not sent to the AI; allow AI processing on the source to analyse it."); return; }
       const r = await run({ stage: "RESEARCH_DELTA", caseId, sourceId: src.id, ...(activePathId ? { pathId: activePathId } : {}) });
       if (!r) return;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const o = r.output as any;
       await must(supabase.from("sources").update({ delta: o, reliability_notes: o.reliability_notes }).eq("id", src.id));
+      sources.refetch();
       const owner = await uid();
       if (o.evidence?.length) {
         await must(supabase.from("evidence_items").insert(o.evidence.map((e: Record<string, unknown>) => ({
@@ -68,7 +69,7 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
           reliability: Math.min(0.95, Math.max(0.2, Number(e["reliability"]) || 0.5)),
           independence: Math.min(1, Math.max(0.25, Number(e["independence"]) || 1)),
           limitation: String(e["limitation"] ?? ""), path_ids: pathIds,
-        }))));
+        })))).catch((err: Error) => { throw new Error(`Research delta saved, but its evidence items were not recorded: ${err.message}`); });
       }
       if (route === "B") await createPath(o.suggested_path_title || src.title, o.suggested_path_thesis || "", src.id);
       toast.success("Research delta ready.");
@@ -80,8 +81,9 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
 
   async function createPath(t: string, thesis: string, sourceId: string) {
     const owner = await uid();
-    const { data } = await supabase.from("thought_paths").insert({ owner_id: owner, case_id: caseId, title: t, thesis }).select("id").single();
-    if (data) {
+    const { data, error } = await supabase.from("thought_paths").insert({ owner_id: owner, case_id: caseId, title: t, thesis }).select("id").single();
+    if (error || !data) { toast.error(`Research saved, but the new thought path was not created: ${error?.message ?? "unknown error"}`); return; }
+    {
       await must(supabase.from("sources").update({ path_ids: [...(s?.path_ids ?? []), data.id] }).eq("id", sourceId));
       await must(supabase.from("cases").update({ active_path_id: data.id }).eq("id", caseId));
       toast.success("New thought path created.");
@@ -131,8 +133,8 @@ export function ResearchStage({ caseId, activePathId }: { caseId: string; active
           <div className="seer-panel space-y-3 p-4">
             <div className="flex items-start justify-between gap-2">
               <div><h2 className="font-medium">{s.title}</h2><div className="seer-label">{s.source_date || "date unknown"} · uploaded {new Date(s.created_at).toLocaleDateString("en-GB")} · {consentLabel(s.processing_consent)}</div>
-                <Button size="sm" variant="outline" className="mt-1" onClick={async () => { const next = s.processing_consent === "ALLOWED_AI" ? "LOCAL_ONLY" : "ALLOWED_AI"; if (next === "ALLOWED_AI" && !confirm("Allow SEER to send this source's text to the AI model?")) return; try { await setSourceConsent(s.id, next); toast.success(next === "ALLOWED_AI" ? "AI processing allowed for this source." : "Source set to Local only."); sources.refetch(); } catch (e) { toast.error(e instanceof Error ? e.message : "Could not change privacy"); } }}>{s.processing_consent === "ALLOWED_AI" ? "Make local only" : "Allow AI processing"}</Button></div>
-              <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Delete this source?")) { await deleteSource(s.id); setSel(null); sources.refetch(); } }}>Delete</Button>
+                <div className="mt-1"><SourceConsentToggle sourceId={s.id} consent={s.processing_consent} onChanged={() => sources.refetch()} /></div></div>
+              <Button size="sm" variant="ghost" onClick={async () => { if (confirm("Delete this source?")) { try { await deleteSource(s.id); toast.success("Source deleted."); setSel(null); } catch (e) { toast.error(e instanceof Error ? e.message : "Not deleted."); } sources.refetch(); } }}>Delete</Button>
             </div>
             {!d ? <p className="text-sm text-muted-foreground">No delta yet.</p> : (
               <div className="grid gap-3 md:grid-cols-2">

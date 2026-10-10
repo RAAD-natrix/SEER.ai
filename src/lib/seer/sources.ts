@@ -1,4 +1,4 @@
-import { must } from "@/lib/seer/must";
+import { SeerWriteError } from "@/lib/seer/must";
 import { supabase } from "@/integrations/supabase/client";
 import { audit, uid } from "./client";
 import { extractFile, sanitiseFilename, sha256, validateFile } from "./extract";
@@ -59,14 +59,45 @@ export async function createTextSource(text: string, opts: { area: "think" | "re
   return data;
 }
 
-export async function deleteSource(id: string) {
-  const { data: s } = await supabase.from("sources").select("storage_path").eq("id", id).single();
-  if (s?.storage_path) await supabase.storage.from("sources").remove([s.storage_path]);
-  await must(supabase.from("sources").update({ deleted_at: new Date().toISOString(), extracted_text: null, storage_path: null, review: null }).eq("id", id));
-  // Conservative: retire any method derived from this source so it no longer informs future work.
-  const { data: rules } = await supabase.from("method_rules").select("id").contains("source_ids", [id]);
-  if (rules?.length) await must(supabase.from("method_rules").update({ status: "RETIRED" }).in("id", rules.map((r) => r.id)));
-  await audit("SOURCE_DELETED", "source", id, { retired_methods: rules?.length ?? 0 });
+export type DeleteSourceResult = { ok: true; fileDeleted: boolean; retiredMethods: number } | { ok: false; reason: string };
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/**
+ * Delete a source honestly: the stored file is removed first and confirmed; only then is the
+ * record cleared. If the file cannot be removed (e.g. it belongs to another team member, whose
+ * files only they can delete), nothing is changed and the reason is returned.
+ */
+export async function deleteSourceWith(db: { from: (t: string) => any; storage: { from: (b: string) => any } }, id: string): Promise<DeleteSourceResult> {
+  const { data: s, error: readErr } = await db.from("sources").select("storage_path,owner_id").eq("id", id).single();
+  if (readErr || !s) return { ok: false, reason: "This source could not be found or you cannot access it. Nothing was deleted." };
+  let fileDeleted = false;
+  if (s.storage_path) {
+    const { data: removed, error: rmErr } = await db.storage.from("sources").remove([s.storage_path]);
+    if (rmErr) return { ok: false, reason: `The original file could not be deleted (${rmErr.message}). Nothing was changed.` };
+    // Storage reports success with an empty list when access rules block the delete.
+    if (!Array.isArray(removed) || removed.length === 0)
+      return { ok: false, reason: "The original file could not be deleted — only the person who uploaded it can delete its file. Nothing was changed." };
+    fileDeleted = true;
+  }
+  const { error: updErr } = await db.from("sources").update({ deleted_at: new Date().toISOString(), extracted_text: null, storage_path: null, review: null }).eq("id", id);
+  if (updErr)
+    return { ok: false, reason: fileDeleted ? `The file was deleted, but the source record could not be cleared (${updErr.message}). Please retry.` : `Not deleted: ${updErr.message}` };
+  const { data: rules, error: ruleReadErr } = await db.from("method_rules").select("id").contains("source_ids", [id]);
+  if (ruleReadErr) return { ok: false, reason: "Source deleted, but methods derived from it could not be checked. Review them in Memory." };
+  if (rules?.length) {
+    const { error: retErr } = await db.from("method_rules").update({ status: "RETIRED" }).in("id", rules.map((r: { id: string }) => r.id));
+    if (retErr) return { ok: false, reason: "Source deleted, but derived methods could not be retired. Review them in Memory." };
+  }
+  return { ok: true, fileDeleted, retiredMethods: rules?.length ?? 0 };
+}
+/* eslint-enable @typescript-eslint/no-explicit-any */
+
+/** Deletes and reports the outcome; throws a SeerWriteError-style Error on any failure. */
+export async function deleteSource(id: string): Promise<DeleteSourceResult & { ok: true }> {
+  const r = await deleteSourceWith(supabase as never, id);
+  if (!r.ok) throw new SeerWriteError(r.reason);
+  await audit("SOURCE_DELETED", "source", id, { retired_methods: r.retiredMethods, file_deleted: r.fileDeleted });
+  return r;
 }
 
 export async function signedUrl(path: string) {
@@ -75,6 +106,7 @@ export async function signedUrl(path: string) {
 }
 
 export async function setSourceConsent(id: string, consent: "LOCAL_ONLY" | "ALLOWED_AI") {
-  const { error } = await supabase.from("sources").update({ processing_consent: consent }).eq("id", id);
+  const { data, error } = await supabase.from("sources").update({ processing_consent: consent }).eq("id", id).select("id");
   if (error) throw new Error(error.message);
+  if (!data?.length) throw new Error("You don't have permission to change this source.");
 }

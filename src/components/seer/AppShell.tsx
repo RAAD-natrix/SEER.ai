@@ -109,7 +109,7 @@ export function Block({ label, children }: { label: string; children: ReactNode 
 
 export function StatusTag({ s }: { s: string }) {
   const good = ["CANONICAL", "CLOSED", "FINAL — OWNER APPROVED", "EXTRACTED", "COMPLETED", "READY FOR OWNER APPROVAL"].includes(s);
-  const bad = ["WITHDRAWN", "BLOCKED_FOR_GENERAL_REUSE", "REJECTED", "FAILED", "EXTRACTION_FAILED", "NOT READY"].includes(s);
+  const bad = ["WITHDRAWN", "BLOCKED_FOR_GENERAL_REUSE", "REJECTED", "FAILED", "EXTRACTION_FAILED", "NOT READY", "INTERRUPTED / STALE — NEEDS REVIEW"].includes(s);
   return (
     <span className={`inline-block rounded border px-1.5 py-0.5 font-mono text-xs tracking-wider ${good ? "border-primary text-primary" : bad ? "border-destructive text-destructive" : "text-muted-foreground"}`}>
       {s}

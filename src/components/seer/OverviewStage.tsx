@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useState } from "react";
 import { Block, Bullets, StatusTag } from "@/components/seer/AppShell";
+import { runDisplayStatus } from "@/lib/seer/runs";
 import { Button } from "@/components/ui/button";
 import { StateEditor, STATE_LABELS } from "@/components/seer/StateEditor";
 import { StageTracker } from "@/components/seer/StageTracker";
@@ -82,7 +83,7 @@ export function OverviewStage({ caseId, onGo }: { caseId: string; onGo: (s: "BRI
         <Block label="Recent AI runs on this case">
           <table className="w-full text-xs">
             <tbody>
-              {d.runs.map((r) => <tr key={r.id} className="border-b"><td className="py-1 font-mono">{r.stage}</td><td><StatusTag s={r.status} /></td><td className="text-muted-foreground">{r.model ?? "—"}</td><td className="text-muted-foreground">{fmt(r.started_at)}</td></tr>)}
+              {d.runs.map((r) => <tr key={r.id} className="border-b"><td className="py-1 font-mono">{r.stage}</td><td><StatusTag s={runDisplayStatus(r.status, r.started_at)} /></td><td className="text-muted-foreground">{r.model ?? "—"}</td><td className="text-muted-foreground">{fmt(r.started_at)}</td></tr>)}
             </tbody>
           </table>
           {!d.runs.length && <p className="text-sm text-muted-foreground">No AI runs yet.</p>}

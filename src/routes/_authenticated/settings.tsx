@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { AppShell, Block, PageTitle, StatusTag } from "@/components/seer/AppShell";
 import { Button } from "@/components/ui/button";
 import { getSystemStatus } from "@/lib/seer/status.functions";
+import { isStaleRun, runDisplayStatus, STALE_RUN_MINUTES } from "@/lib/seer/runs";
 import { uid } from "@/lib/seer/client";
 
 export const Route = createFileRoute("/_authenticated/settings")({
@@ -87,19 +88,20 @@ function SettingsPage() {
 
         <section className="seer-panel space-y-3 p-4 md:col-span-2">
           <h2 className="font-semibold">AI usage</h2>
-          <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-5">
+          <div className="grid grid-cols-2 gap-3 text-sm md:grid-cols-6">
             <Stat k="Runs (total)" v={r.length} />
             <Stat k="Runs (24 h)" v={r.filter((x) => +new Date(x.started_at) > day).length} />
             <Stat k="Failed" v={r.filter((x) => x.status === "FAILED").length} />
+            <Stat k={`Interrupted / stale (>${STALE_RUN_MINUTES} min)`} v={r.filter((x) => isStaleRun(x.status, x.started_at)).length} />
             <Stat k="Tokens (total)" v={r.reduce((a, x) => a + tok(x.usage), 0).toLocaleString("en-GB")} />
             <Stat k="Models used" v={byModel.map(([m, n]) => `${m} ×${n}`).join(", ") || "—"} />
           </div>
           <Block label="Last AI run">
-            {last ? <p className="text-sm"><span className="font-mono">{last.stage}</span> · <StatusTag s={last.status} /> · {last.model ?? "no model recorded"} · {fmt(last.started_at)}{last.error ? ` · ${last.error}` : ""}</p> : <p className="text-sm text-muted-foreground">No AI runs yet.</p>}
+            {last ? <p className="text-sm"><span className="font-mono">{last.stage}</span> · <StatusTag s={runDisplayStatus(last.status, last.started_at)} /> · {last.model ?? "no model recorded"} · {fmt(last.started_at)}{last.error ? ` · ${last.error}` : ""}</p> : <p className="text-sm text-muted-foreground">No AI runs yet.</p>}
           </Block>
           <div className="overflow-x-auto" tabIndex={0} role="region" aria-label="Recent AI runs"><table className="w-full text-xs">
             <thead><tr className="text-left text-muted-foreground"><th>Stage</th><th>Status</th><th>Model</th><th>Tokens</th><th>Started</th></tr></thead>
-            <tbody>{r.slice(0, 20).map((x) => <tr key={x.id} className="border-b"><td className="py-1 font-mono">{x.stage}</td><td><StatusTag s={x.status} /></td><td>{x.model ?? "—"}</td><td>{tok(x.usage) || "—"}</td><td>{fmt(x.started_at)}</td></tr>)}</tbody>
+            <tbody>{r.slice(0, 20).map((x) => <tr key={x.id} className="border-b"><td className="py-1 font-mono">{x.stage}</td><td><StatusTag s={runDisplayStatus(x.status, x.started_at)} /></td><td>{x.model ?? "—"}</td><td>{tok(x.usage) || "—"}</td><td>{fmt(x.started_at)}</td></tr>)}</tbody>
           </table></div>
         </section>
       </div>
