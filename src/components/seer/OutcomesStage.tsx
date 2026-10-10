@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { OutcomeMethodFeedback } from "./OutcomeMethodFeedback";
 import { ReadinessWords, readinessVerdict } from "./ReadinessWords";
 import { useQuery } from "@tanstack/react-query";
@@ -52,7 +53,7 @@ function Deliverables({ caseId }: { caseId: string }) {
     const owner = await uid();
     const { data, error } = await supabase.from("outputs").insert({ owner_id: owner, case_id: caseId, template_key: key, title: `${t.name} — ${b.case?.title}`, content: out.markdown, readiness: readiness as never, status: "NOT READY" }).select("id").single();
     if (error) { toast.error(error.message); return; }
-    await supabase.from("output_versions").insert({ owner_id: owner, output_id: data.id, version: 1, content: out.markdown, status: "NOT READY" });
+    await must(supabase.from("output_versions").insert({ owner_id: owner, output_id: data.id, version: 1, content: out.markdown, status: "NOT READY" }));
     setSel(data.id);
     outputs.refetch();
   }
@@ -210,7 +211,7 @@ function Results({ caseId }: { caseId: string }) {
     if (error) { toast.error(error.message); return; }
     const fc = forecasts.data?.find((x) => x.id === forecastId);
     const r = await run({ stage: "OUTCOME_REVIEW", caseId, text: JSON.stringify({ forecast: fc ?? null, outcome: data }) });
-    if (r) await supabase.from("learning_events").insert({ owner_id: owner, case_id: caseId, event_type: "OUTCOME_LEARNING", context: "Outcome recorded", previous_proposition: fc?.expected_result ?? null, revised_proposition: String(r.output["learning_summary"] ?? ""), reason: ((r.output["method_implications"] as string[]) ?? []).join("; "), scope: "CASE" });
+    if (r) await must(supabase.from("learning_events").insert({ owner_id: owner, case_id: caseId, event_type: "OUTCOME_LEARNING", context: "Outcome recorded", previous_proposition: fc?.expected_result ?? null, revised_proposition: String(r.output["learning_summary"] ?? ""), reason: ((r.output["method_implications"] as string[]) ?? []).join("; "), scope: "CASE" }));
     setOc({}); outcomes.refetch(); toast.success("Outcome recorded and learning event created.");
   }
 

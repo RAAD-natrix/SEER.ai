@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -57,7 +58,7 @@ function OpenMind() {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const o = r.output as any;
         setReply(o.reply);
-        if (o.items?.length) await supabase.from("openmind_items").insert(o.items.map((i: { kind: string; text: string }) => ({ owner_id: owner, kind: i.kind, content: i.text, parent_id: item.id })));
+        if (o.items?.length) await must(supabase.from("openmind_items").insert(o.items.map((i: { kind: string; text: string }) => ({ owner_id: owner, kind: i.kind, content: i.text, parent_id: item.id }))));
       }
     }
     setParent(null);
@@ -72,8 +73,8 @@ function OpenMind() {
     const scan = await fullScan(m, run);
     const owner = await uid();
     const { data } = await supabase.from("method_rules").insert({ owner_id: owner, ...m, memory_class: "METHOD", status: scan.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW", contamination: scan as never, tags: ["open-mind"] }).select("id").single();
-    await supabase.from("openmind_items").update({ method_rule_id: data?.id ?? null }).eq("id", i.id);
-    await supabase.from("learning_events").insert({ owner_id: owner, event_type: "METHOD_CANDIDATE", context: "Open Mind promotion", revised_proposition: m.mechanism, method_rule_id: data?.id ?? null, scope: "CANDIDATE" });
+    await must(supabase.from("openmind_items").update({ method_rule_id: data?.id ?? null }).eq("id", i.id));
+    await must(supabase.from("learning_events").insert({ owner_id: owner, event_type: "METHOD_CANDIDATE", context: "Open Mind promotion", revised_proposition: m.mechanism, method_rule_id: data?.id ?? null, scope: "CANDIDATE" }));
     toast.success(scan.blocked ? "Created but blocked by contamination scan — review in Memory." : "Method candidate created — review in Memory.");
     items.refetch();
   }
@@ -92,12 +93,12 @@ function OpenMind() {
           {i.url && <a className="text-xs text-primary underline" href={i.url} target="_blank" rel="noreferrer noopener">{i.url}</a>}
           <div className="mt-1 flex flex-wrap gap-2 text-xs">
             <button className="text-muted-foreground hover:text-foreground" onClick={() => setParent(i)}>Branch</button>
-            <button className="text-muted-foreground hover:text-foreground" onClick={async () => { await supabase.from("openmind_items").update({ reusable: !i.reusable }).eq("id", i.id); await audit("OPENMIND_REUSABLE_CHANGED", "openmind_item", i.id, { reusable: !i.reusable }); items.refetch(); }}>{i.reusable ? "Unmark reusable" : "Mark reusable across cases"}</button>
+            <button className="text-muted-foreground hover:text-foreground" onClick={async () => { await must(supabase.from("openmind_items").update({ reusable: !i.reusable }).eq("id", i.id)); await audit("OPENMIND_REUSABLE_CHANGED", "openmind_item", i.id, { reusable: !i.reusable }); items.refetch(); }}>{i.reusable ? "Unmark reusable" : "Mark reusable across cases"}</button>
             {!i.method_rule_id && <button className="text-muted-foreground hover:text-foreground" disabled={!!busy} onClick={() => promote(i)}>Promote to method candidate</button>}
             <select aria-label="Move to case" className="rounded border bg-background text-xs" value={i.case_id ?? ""} onChange={async (e) => {
               const cid = e.target.value || null;
-              await supabase.from("openmind_items").update({ case_id: cid }).eq("id", i.id);
-              if (cid) { const owner = await uid(); await supabase.from("sources").insert({ owner_id: owner, case_id: cid, area: "research", title: i.title || `Open Mind: ${i.kind}`, source_type: "OPEN MIND", status: "EXTRACTED", extracted_text: i.content, routing: "C", coverage: { total_units: 1, extracted_units: 1, coverage_percent: 100, unit: "text" } }); toast.success("Copied into the case research library."); }
+              await must(supabase.from("openmind_items").update({ case_id: cid }).eq("id", i.id));
+              if (cid) { const owner = await uid(); await must(supabase.from("sources").insert({ owner_id: owner, case_id: cid, area: "research", title: i.title || `Open Mind: ${i.kind}`, source_type: "OPEN MIND", status: "EXTRACTED", extracted_text: i.content, routing: "C", coverage: { total_units: 1, extracted_units: 1, coverage_percent: 100, unit: "text" } })); toast.success("Copied into the case research library."); }
               items.refetch();
             }}>
               <option value="">Move to case…</option>{cases.data?.map((c) => <option key={c.id} value={c.id}>{c.title}</option>)}

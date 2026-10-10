@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -62,7 +63,7 @@ export function MethodCard({ rule, onChange }: { rule: Rule; onChange: () => voi
     const { error } = await supabase.from("method_rules").update({ status }).eq("id", rule.id);
     if (error) { toast.error(error.message); return; }
     await audit(event, "method_rule", rule.id, { from: rule.status, to: status });
-    if (status === "CANONICAL") await supabase.from("learning_events").insert({ owner_id: rule.owner_id, event_type: "CANONICAL_PRINCIPLE", revised_proposition: rule.mechanism, method_rule_id: rule.id, confirmed: true, scope: "GENERAL" });
+    if (status === "CANONICAL") await must(supabase.from("learning_events").insert({ owner_id: rule.owner_id, event_type: "CANONICAL_PRINCIPLE", revised_proposition: rule.mechanism, method_rule_id: rule.id, confirmed: true, scope: "GENERAL" }));
     onChange();
   }
 

@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
@@ -111,7 +112,7 @@ function Onboarding({ profile }: { profile: { id: string; display_name: string |
           disabled={!ack || !name || !ws || saving}
           onClick={async () => {
             setSaving(true);
-            await supabase.from("profiles").update({ display_name: name, workspace_name: ws, language: lang, onboarded: true }).eq("id", profile.id);
+            await must(supabase.from("profiles").update({ display_name: name, workspace_name: ws, language: lang, onboarded: true }).eq("id", profile.id));
             await audit("ONBOARDING_COMPLETED", "profile", profile.id, { language: lang });
             qc.invalidateQueries({ queryKey: ["profile"] });
           }}

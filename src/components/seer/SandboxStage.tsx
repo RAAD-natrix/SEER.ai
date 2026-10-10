@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { useQuery } from "@tanstack/react-query";
 import { AnalysisPanel } from "./AnalysisPanel";
 import { useState } from "react";
@@ -38,7 +39,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
   const refresh = () => { paths.refetch(); msgs.refetch(); pv.refetch(); };
 
   async function snapshot(p: Path, reason: string) {
-    await supabase.from("path_versions").insert({ owner_id: p.owner_id, path_id: p.id, version: p.version, snapshot: p as never, reason });
+    await must(supabase.from("path_versions").insert({ owner_id: p.owner_id, path_id: p.id, version: p.version, snapshot: p as never, reason }));
   }
   async function newPath(title: string, thesis = "", parent?: Path, mergedFrom: string[] = [], detail: Record<string, unknown> = {}) {
     const owner = await uid();
@@ -49,7 +50,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
   }
   async function setStatus(p: Path, status: string, patch: Partial<Path> = {}) {
     await snapshot(p, `${p.status} → ${status}`);
-    await supabase.from("thought_paths").update({ status, ...patch }).eq("id", p.id);
+    await must(supabase.from("thought_paths").update({ status, ...patch }).eq("id", p.id));
     await audit(`PATH_${status}`, "thought_path", p.id);
     refresh();
   }
@@ -57,7 +58,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
   async function send() {
     if (!active || !msg.trim()) return;
     const owner = await uid();
-    await supabase.from("sandbox_messages").insert({ owner_id: owner, case_id: caseId, path_id: active.id, role: "owner", kind, content: msg });
+    await must(supabase.from("sandbox_messages").insert({ owner_id: owner, case_id: caseId, path_id: active.id, role: "owner", kind, content: msg }));
     const text = `[${kind}] ${msg}`;
     setMsg("");
     msgs.refetch();
@@ -66,7 +67,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const o = r.output as any;
     const content = o.reply + (o.challenges?.length ? `\n\n**Challenges**\n${o.challenges.map((c: string) => `- ${c}`).join("\n")}` : "");
-    await supabase.from("sandbox_messages").insert({ owner_id: owner, case_id: caseId, path_id: active.id, role: "seer", kind: "RESPONSE", content, basis: o.basis, prior_learning: { used: o.prior_learning_used, retrieved: r.retrieved, model: r.model }, ai_run_id: r.runId });
+    await must(supabase.from("sandbox_messages").insert({ owner_id: owner, case_id: caseId, path_id: active.id, role: "seer", kind: "RESPONSE", content, basis: o.basis, prior_learning: { used: o.prior_learning_used, retrieved: r.retrieved, model: r.model }, ai_run_id: r.runId }));
     msgs.refetch();
   }
 
@@ -87,7 +88,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
       if (scan.blocked) toast.warning("Method card blocked by contamination scan — review it in Memory.");
       else toast.success(canonical ? "Principle drafted. Challenge, validate and approve it in Memory before reuse." : "Method candidate created for review in Memory.");
     }
-    await supabase.from("learning_events").insert({ owner_id: owner, case_id: caseId, event_type: canonical ? "CANONICAL_PRINCIPLE" : o.event_type, context: "Sandbox", previous_proposition: content.slice(0, 2000), owner_response: ownerResponse, revised_proposition: o.revised_proposition, reason: o.reason, method_rule_id: ruleId, confirmed: canonical, scope: ruleId ? "CANDIDATE" : "CASE" });
+    await must(supabase.from("learning_events").insert({ owner_id: owner, case_id: caseId, event_type: canonical ? "CANONICAL_PRINCIPLE" : o.event_type, context: "Sandbox", previous_proposition: content.slice(0, 2000), owner_response: ownerResponse, revised_proposition: o.revised_proposition, reason: o.reason, method_rule_id: ruleId, confirmed: canonical, scope: ruleId ? "CANDIDATE" : "CASE" }));
     return o;
   }
 
@@ -98,19 +99,19 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
     if (["CHALLENGE", "REVISE", "REJECT"].includes(action)) {
       note = prompt(`${action}: what is your response?`) ?? "";
       if (!note) return;
-      await supabase.from("sandbox_messages").insert({ owner_id: owner, case_id: caseId, path_id: active.id, role: "owner", kind: action === "REJECT" ? "CORRECTION" : "CHALLENGE", content: `${action}: ${note}` });
+      await must(supabase.from("sandbox_messages").insert({ owner_id: owner, case_id: caseId, path_id: active.id, role: "owner", kind: action === "REJECT" ? "CORRECTION" : "CHALLENGE", content: `${action}: ${note}` }));
       await makeMethod(m.content, false, note);
     }
-    if (action === "ADD TO EVIDENCE") await supabase.from("evidence_items").insert({ owner_id: owner, case_id: caseId, statement: m.content.slice(0, 1000), source_label: "SEER sandbox response", classification: "INFERRED", path_ids: [active.id] });
+    if (action === "ADD TO EVIDENCE") await must(supabase.from("evidence_items").insert({ owner_id: owner, case_id: caseId, statement: m.content.slice(0, 1000), source_label: "SEER sandbox response", classification: "INFERRED", path_ids: [active.id] }));
     if (action === "ADD TO UNKNOWN") {
       const d = (active.detail ?? {}) as Record<string, unknown>;
-      await supabase.from("thought_paths").update({ detail: { ...d, unknowns: [...((d["unknowns"] as string[]) ?? []), m.content.slice(0, 500)] } as never }).eq("id", active.id);
+      await must(supabase.from("thought_paths").update({ detail: { ...d, unknowns: [...((d["unknowns"] as string[]) ?? []), m.content.slice(0, 500)] } as never }).eq("id", active.id));
     }
     if (action === "CREATE PATH") await newPath(`From: ${active.title}`, m.content.slice(0, 300), active);
     if (action === "MAKE METHOD CANDIDATE") await makeMethod(m.content, false);
     if (action === "MAKE CANONICAL PRINCIPLE") { if (!confirm("Make a canonical principle? This requires your explicit confirmation.")) return; await makeMethod(m.content, true); }
     const acts = Array.isArray(m.actions) ? m.actions : [];
-    await supabase.from("sandbox_messages").update({ actions: [...acts, { action, note, at: new Date().toISOString() }] as never }).eq("id", m.id);
+    await must(supabase.from("sandbox_messages").update({ actions: [...acts, { action, note, at: new Date().toISOString() }] as never }).eq("id", m.id));
     refresh();
   }
 
@@ -119,7 +120,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
     if (!r) return;
     const owner = await uid();
     const next = (states.data?.[0]?.version ?? 0) + 1;
-    await supabase.from("strategic_state_versions").insert({ owner_id: owner, case_id: caseId, version: next, state: r.output as never, reason: "STATE_UPDATE run", ai_run_id: r.runId });
+    await must(supabase.from("strategic_state_versions").insert({ owner_id: owner, case_id: caseId, version: next, state: r.output as never, reason: "STATE_UPDATE run", ai_run_id: r.runId }));
     toast.success(`Strategic state v${next} saved.`);
     states.refetch();
   }
@@ -151,7 +152,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
     if (!active || !closeDraft) return;
     if (Object.values(closeDraft).some((v) => !v.trim())) { toast.error("All closure fields are required."); return; }
     await setStatus(active, "CLOSED", { conclusion: closeDraft as never, closed_at: new Date().toISOString() });
-    await supabase.from("learning_events").insert({ owner_id: active.owner_id, case_id: caseId, event_type: "FINAL_DECISION", context: `Path closed: ${active.title}`, revised_proposition: closeDraft["conclusion"] ?? null, confirmed: true, scope: "CASE" });
+    await must(supabase.from("learning_events").insert({ owner_id: active.owner_id, case_id: caseId, event_type: "FINAL_DECISION", context: `Path closed: ${active.title}`, revised_proposition: closeDraft["conclusion"] ?? null, confirmed: true, scope: "CASE" }));
     setCloseDraft(null);
   }
 
@@ -159,7 +160,7 @@ export function SandboxStage({ caseId, activePathId, onActive }: { caseId: strin
     if (!active) return;
     const r = await run({ stage: "PATH_REDTEAM", caseId, pathId: active.id });
     if (!r) return;
-    await supabase.from("thought_paths").update({ detail: { ...((active.detail ?? {}) as Record<string, unknown>), redteam: r.output } as never }).eq("id", active.id);
+    await must(supabase.from("thought_paths").update({ detail: { ...((active.detail ?? {}) as Record<string, unknown>), redteam: r.output } as never }).eq("id", active.id));
     setTab("redteam");
     refresh();
   }

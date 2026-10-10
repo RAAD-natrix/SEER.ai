@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -38,7 +39,7 @@ export function AnalysisPanel({ caseId, activePathId }: { caseId: string; active
     const owner = await uid();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const rows = ((r.output as any).options ?? []).map((o: any) => ({ owner_id: owner, case_id: caseId, label: o.label, description: o.description, assumptions: o.assumptions, switching_conditions: o.switching_conditions, hard_constraint_fail: !!o.hard_constraint_fail }));
-    const { error } = rows.length ? await supabase.from("options").insert(rows) : { error: null };
+    const { error } = rows.length ? await must(supabase.from("options").insert(rows) : { error: null });
     if (error) toast.error(error.message); else toast.success(`${rows.length} options saved.`);
     done();
   }
@@ -52,8 +53,8 @@ export function AnalysisPanel({ caseId, activePathId }: { caseId: string; active
     const rk = (out.risks ?? []).map((x: any) => ({ ...x, risk_owner: x.risk_owner || null, owner_id: owner, case_id: caseId, path_id: activePathId }));
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const st = (out.stakeholders ?? []).map((x: any) => ({ ...x, owner_id: owner, case_id: caseId }));
-    const e1 = rk.length ? (await supabase.from("risks").insert(rk)).error : null;
-    const e2 = st.length ? (await supabase.from("stakeholders").insert(st)).error : null;
+    const e1 = rk.length ? (await must(supabase.from("risks").insert(rk))).error : null;
+    const e2 = st.length ? (await must(supabase.from("stakeholders").insert(st))).error : null;
     if (e1 || e2) toast.error((e1 ?? e2)!.message); else toast.success(`${rk.length} risks and ${st.length} stakeholders saved.`);
     done();
   }

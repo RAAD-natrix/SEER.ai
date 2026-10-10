@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -80,7 +81,7 @@ function Search() {
       <div className="mb-3 flex flex-wrap items-center gap-2 text-xs">
         <span className="seer-label">Saved views</span>
         {views.data?.map((v) => <button key={v.id} className="rounded border px-2 py-0.5" onClick={() => { const fl = v.filters as unknown as Filters; setF(fl); setActive(fl); }}>{v.name}</button>)}
-        {active && <Button size="sm" variant="ghost" onClick={async () => { const name = prompt("Name this view"); if (!name) return; await supabase.from("saved_views").insert({ owner_id: await uid(), name, scope: "search", filters: active as never }); toast.success("View saved."); views.refetch(); }}>Save current view</Button>}
+        {active && <Button size="sm" variant="ghost" onClick={async () => { const name = prompt("Name this view"); if (!name) return; await must(supabase.from("saved_views").insert({ owner_id: await uid(), name, scope: "search", filters: active as never })); toast.success("View saved."); views.refetch(); }}>Save current view</Button>}
         {results.data && <Button size="sm" variant="ghost" onClick={() => exportCsv("search_results", results.data.map(({ owner: _o, ...r }) => r), active ?? {})}>Export results</Button>}
       </div>
       {results.isFetching && <p className="seer-label">Searching…</p>}

@@ -1,3 +1,4 @@
+import { must } from "@/lib/seer/must";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
@@ -74,7 +75,7 @@ function Think() {
     if (!r) return;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const out = r.output as any;
-    await supabase.from("sources").update({ review: out as never, status: sel.status === "EXTRACTED" ? "STUDIED" : "STUDIED_PARTIAL" }).eq("id", sel.id);
+    await must(supabase.from("sources").update({ review: out as never, status: sel.status === "EXTRACTED" ? "STUDIED" : "STUDIED_PARTIAL" }).eq("id", sel.id));
     const owner = await uid();
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cards: any[] = out.candidate_methods ?? [];
@@ -90,7 +91,7 @@ function Think() {
         status: caseOnly ? "CASE_ONLY" : scan.blocked ? "BLOCKED_FOR_GENERAL_REUSE" : "PENDING_REVIEW",
         confidentiality_scope: caseOnly ? "SOURCE_ONLY" : "GENERAL",
       }).select("id").single();
-      await supabase.from("learning_events").insert({ owner_id: owner, source_id: sel.id, event_type: "METHOD_CANDIDATE", context: "THINK study", revised_proposition: c.mechanism, method_rule_id: ins?.id ?? null, scope: "CANDIDATE" });
+      await must(supabase.from("learning_events").insert({ owner_id: owner, source_id: sel.id, event_type: "METHOD_CANDIDATE", context: "THINK study", revised_proposition: c.mechanism, method_rule_id: ins?.id ?? null, scope: "CANDIDATE" }));
     }
     toast.success(`Study complete. ${cards.length} candidate method(s) for review.`);
     sources.refetch(); methods.refetch();
